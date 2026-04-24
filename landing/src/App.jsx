@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import Call from './Call'
+import CallViewer from './CallViewer'
 import './App.css'
 
-const APP_URL = 'https://vision.vectorstays.com/'
 const MCP_URL = 'https://bnbmesh.ai/api/mcp'
 
 const FEATURES = [
@@ -37,7 +38,7 @@ const FEATURES = [
   },
 ]
 
-function Nav() {
+function Nav({ onTalk, onHost }) {
   return (
     <nav className="nav">
       <a className="logo" href="/">
@@ -46,7 +47,7 @@ function Nav() {
       <div className="nav-links">
         <a href="#features">Features</a>
         <a href="#mcp">ChatGPT Skill</a>
-        <a className="btn btn-ghost" href={APP_URL}>Login</a>
+        <button className="btn btn-ghost" onClick={onTalk}>Talk to support</button>
       </div>
     </nav>
   )
@@ -60,7 +61,7 @@ function Nav() {
  * When the user stops speaking we drop the transcript into the input and fire
  * the search automatically.
  */
-function Hero() {
+function Hero({ onTalk, onHost }) {
   const [q, setQ] = useState('3 bedroom in Santa Barbara Memorial Day weekend')
   const [state, setState] = useState({ loading: false, results: null, error: null, source: null })
   const [listening, setListening] = useState(false)
@@ -197,7 +198,8 @@ function Hero() {
         )}
 
         <div className="cta-row">
-          <a className="btn btn-primary" href={APP_URL}>Open the admin portal →</a>
+          <button className="btn btn-primary" onClick={onHost}>Become a Host →</button>
+          <button className="btn btn-ghost" onClick={onTalk}>Talk to support</button>
           <a className="btn btn-ghost" href="#mcp">Install in ChatGPT</a>
         </div>
       </div>
@@ -267,13 +269,32 @@ function Footer() {
 }
 
 export default function App() {
+  const [callMode, setCallMode] = useState(null) // null | 'support' | 'host'
+  const [viewCallId, setViewCallId] = useState(null)
+
+  // Hash routing: #call-<id> → public viewer.
+  useEffect(() => {
+    const sync = () => {
+      const m = (window.location.hash || '').match(/^#call-([a-f0-9]{32})$/)
+      setViewCallId(m ? m[1] : null)
+    }
+    sync()
+    window.addEventListener('hashchange', sync)
+    return () => window.removeEventListener('hashchange', sync)
+  }, [])
+
+  if (viewCallId) {
+    return <CallViewer callId={viewCallId} onClose={() => { window.location.hash = '' }} />
+  }
+
   return (
     <>
-      <Nav />
-      <Hero />
+      <Nav onTalk={() => setCallMode('support')} onHost={() => setCallMode('host')} />
+      <Hero onTalk={() => setCallMode('support')} onHost={() => setCallMode('host')} />
       <Features />
       <McpSection />
       <Footer />
+      {callMode && <Call mode={callMode} onClose={() => setCallMode(null)} />}
     </>
   )
 }

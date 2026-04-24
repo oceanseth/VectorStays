@@ -35,3 +35,10 @@ variable "x402_payment_address" {
   type        = string
   default     = "0x0000000000000000000000000000000000000000"
 }
+
+variable "vapi_private_key" {
+  description = "Vapi private API key (for server-side call control + assistant management)."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

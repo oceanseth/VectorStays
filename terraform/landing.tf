@@ -89,6 +89,7 @@ resource "aws_lambda_function" "api" {
       NODE_OPTIONS         = "--enable-source-maps"
       TINYFISH_API_KEY     = var.tinyfish_api_key
       REDIS_URL            = var.redis_url
+      VAPI_PRIVATE_KEY     = var.vapi_private_key
       X402_PAYMENT_ADDRESS = var.x402_payment_address
     }
   }

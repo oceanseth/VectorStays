@@ -16,8 +16,13 @@ import { createClient } from 'redis'
 const TINYFISH_API_KEY      = process.env.TINYFISH_API_KEY || ''
 const TINYFISH_API_BASE     = process.env.TINYFISH_API_BASE || 'https://agent.tinyfish.ai/v1'
 const REDIS_URL             = process.env.REDIS_URL || ''
+const VAPI_PRIVATE_KEY      = process.env.VAPI_PRIVATE_KEY || ''
+const VAPI_API_BASE         = 'https://api.vapi.ai'
 const X402_PAYMENT_ADDRESS  = process.env.X402_PAYMENT_ADDRESS || '0x0000000000000000000000000000000000000000'
 const X402_PRICE_USD        = process.env.X402_PRICE_USD || '0.05'
+
+// Call IDs are 32-char hex (128 bits). Reject anything else immediately.
+const CALL_ID_RE = /^[a-f0-9]{32}$/
 
 const PLATFORMS = ['airbnb', 'vrbo', 'homeaway', 'direct']
 
@@ -521,6 +526,131 @@ export const handler = async (event) => {
     const q = event.queryStringParameters?.q || ''
     const out = await searchListings(q)
     return json(200, { query: q, stays: (out.results || []).slice(0, 2) })
+  }
+
+  // ---- Vapi browser-call lifecycle + public viewer ----------------------
+  // POST /api/calls/{id}/start  — register a new call (mode, started_at)
+  // POST /api/calls/{id}/turn   — append one transcript turn from the browser
+  // POST /api/calls/{id}/end    — mark the call ended
+  // POST /api/calls/{id}/context — inject a system message into the live Vapi call
+  // GET  /api/calls/{id}        — read meta + transcript (public viewer polls this)
+  // POST /api/vapi-webhook      — Vapi → us, optional dual-stream of transcript
+
+  const callMatch = path.match(/^\/api\/calls\/([a-f0-9]{32})(?:\/(start|end|turn|context))?$/)
+  if (callMatch) {
+    const id = callMatch[1]
+    const sub = callMatch[2] || ''
+    if (!CALL_ID_RE.test(id)) return json(400, { error: 'bad call id' })
+    const metaKey = `bnbmesh:call:${id}:meta`
+    const turnsKey = `bnbmesh:call:${id}:turns`
+
+    let body = null
+    if (event.body) {
+      try {
+        body = event.isBase64Encoded
+          ? JSON.parse(Buffer.from(event.body, 'base64').toString())
+          : JSON.parse(event.body)
+      } catch { /* tolerate bad json on GET */ }
+    }
+
+    if (method === 'GET' && !sub) {
+      const c = await redis()
+      if (!c) return json(503, { error: 'redis not configured' })
+      const meta = await redisGet(metaKey)
+      const turns = await c.lRange(turnsKey, 0, -1).catch(() => [])
+      const parsed = (turns || []).map((t) => { try { return JSON.parse(t) } catch { return null } }).filter(Boolean)
+      return json(200, { meta: meta || null, turns: parsed })
+    }
+
+    if (method === 'POST' && sub === 'start') {
+      const meta = {
+        id,
+        mode:        body?.mode || 'support',
+        status:      'in_progress',
+        started_at:  body?.started_at || new Date().toISOString(),
+        vapi_call_id: body?.vapi_call_id || null,
+      }
+      await redisSetEx(metaKey, 7 * 24 * 3600, meta)
+      return json(200, { ok: true, meta })
+    }
+
+    if (method === 'POST' && sub === 'turn') {
+      if (!body?.role || !body?.text) return json(400, { error: 'missing role/text' })
+      const c = await redis()
+      if (!c) return json(503, { error: 'redis not configured' })
+      const turn = { role: body.role, text: body.text, at: body.at || new Date().toISOString() }
+      await c.rPush(turnsKey, JSON.stringify(turn))
+      await c.expire(turnsKey, 7 * 24 * 3600)
+      return json(200, { ok: true })
+    }
+
+    if (method === 'POST' && sub === 'end') {
+      const meta = (await redisGet(metaKey)) || { id }
+      meta.status = 'ended'
+      meta.ended_at = body?.ended_at || new Date().toISOString()
+      await redisSetEx(metaKey, 7 * 24 * 3600, meta)
+      return json(200, { ok: true, meta })
+    }
+
+    if (method === 'POST' && sub === 'context') {
+      const ctx = (body?.context || '').trim()
+      if (!ctx) return json(400, { error: 'empty context' })
+      // Append a synthetic system turn so the public viewer sees it immediately.
+      const c = await redis()
+      if (c) {
+        const turn = { role: 'system', text: ctx, at: new Date().toISOString() }
+        await c.rPush(turnsKey, JSON.stringify(turn))
+        await c.expire(turnsKey, 7 * 24 * 3600)
+      }
+      // Forward to the live Vapi call if we know its id.
+      const meta = await redisGet(metaKey)
+      if (VAPI_PRIVATE_KEY && meta?.vapi_call_id) {
+        try {
+          await fetch(`${VAPI_API_BASE}/call/${meta.vapi_call_id}/control`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${VAPI_PRIVATE_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'add-message',
+              message: { role: 'system', content: `Support agent context: ${ctx}` },
+            }),
+          })
+        } catch (e) { console.warn('vapi control', e.message) }
+      }
+      return json(200, { ok: true })
+    }
+
+    return json(405, { error: 'method/sub not supported' })
+  }
+
+  // Vapi → us webhook. If you set this URL on the assistant, we'll mirror the
+  // server-side transcript into the same Redis keys keyed by our 32-char id
+  // (passed via assistantOverrides.metadata.bnbmesh_call_id from the browser).
+  if (path === '/api/vapi-webhook') {
+    if (method !== 'POST') return json(405, {})
+    let body = {}
+    try {
+      body = event.body
+        ? (event.isBase64Encoded ? JSON.parse(Buffer.from(event.body, 'base64').toString()) : JSON.parse(event.body))
+        : {}
+    } catch {}
+    const callId = body?.message?.call?.metadata?.bnbmesh_call_id
+                || body?.call?.metadata?.bnbmesh_call_id
+    if (callId && CALL_ID_RE.test(callId) && body?.message?.type === 'transcript' && body?.message?.transcriptType === 'final') {
+      const turn = {
+        role: body.message.role,
+        text: body.message.transcript,
+        at: new Date().toISOString(),
+      }
+      const c = await redis()
+      if (c) {
+        await c.rPush(`bnbmesh:call:${callId}:turns`, JSON.stringify(turn))
+        await c.expire(`bnbmesh:call:${callId}:turns`, 7 * 24 * 3600)
+      }
+    }
+    return json(200, { ok: true })
   }
 
   if (path === '/api/mcp' || path === '/mcp') {
