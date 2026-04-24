@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en" class=" js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Vector Owner Portal">
+<meta name="author" content="Seth Caldwell">
+<title></title>
+<link rel="shortcut icon" href="assets/images/favicon.ico">
+<script src="/js/exif.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+<script src="/js/daterangepicker.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/jquery.tablesorter.min.js"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyCF0Ix1JUCqZXx1lOYT_30L07J2Vuswh1M"
+        type="text/javascript"></script>
+<link rel="stylesheet" href="plugins/bootstrap-slider/css/bootstrap-slider.min.css">
+<script src="plugins/bootstrap-slider/js/bootstrap-slider.min.js"></script>
+<script src="plugins/bootstrap-select/js/bootstrap-select.js"></script>
+<link href="plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<!-- start Mixpanel --><script type="text/javascript">(function(c,a){if(!a.__SV){var b=window;try{var d,m,j,k=b.location,f=k.hash;d=function(a,b){return(m=a.match(RegExp(b+"=([^&]*)")))?m[1]:null};f&&d(f,"state")&&(j=JSON.parse(decodeURIComponent(d(f,"state"))),"mpeditor"===j.action&&(b.sessionStorage.setItem("_mpcehash",f),history.replaceState(j.desiredHash||"",c.title,k.pathname+k.search)))}catch(n){}var l,h;window.mixpanel=a;a._i=[];a.init=function(b,d,g){function c(b,i){var a=i.split(".");2==a.length&&(b=b[a[0]],i=a[1]);b[i]=function(){b.push([i].concat(Array.prototype.slice.call(arguments,
+    0)))}}var e=a;"undefined"!==typeof g?e=a[g]=[]:g="mixpanel";e.people=e.people||[];e.toString=function(b){var a="mixpanel";"mixpanel"!==g&&(a+="."+g);b||(a+=" (stub)");return a};e.people.toString=function(){return e.toString(1)+".people (stub)"};l="disable time_event track track_pageview track_links track_forms track_with_groups add_group set_group remove_group register register_once alias unregister identify name_tag set_config reset opt_in_tracking opt_out_tracking has_opted_in_tracking has_opted_out_tracking clear_opt_in_out_tracking people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user people.remove".split(" ");
+    for(h=0;h<l.length;h++)c(e,l[h]);var f="set set_once union unset remove delete".split(" ");e.get_group=function(){function a(c){b[c]=function(){call2_args=arguments;call2=[c].concat(Array.prototype.slice.call(call2_args,0));e.push([d,call2])}}for(var b={},d=["get_group"].concat(Array.prototype.slice.call(arguments,0)),c=0;c<f.length;c++)a(f[c]);return b};a._i.push([b,d,g])};a.__SV=1.2;b=c.createElement("script");b.type="text/javascript";b.async=!0;b.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?
+    MIXPANEL_CUSTOM_LIB_URL:"file:"===c.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";d=c.getElementsByTagName("script")[0];d.parentNode.insertBefore(b,d)}})(document,window.mixpanel||[]);
+mixpanel.init("7a1a0e35aab34435a8b4c0043f3387a8");</script><!-- end Mixpanel -->
+
+<script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-auth.js"></script>
+<script>
+    // Default Firebase app (vector-3b246) — used by the existing SPA features.
+    var config = {
+        apiKey: "AIzaSyDfI5i5q4BQu5YBnal6pgq_axtBiQLwIWw",
+        authDomain: "vector-3b246.firebaseapp.com",
+        databaseURL: "https://vector-3b246.firebaseio.com",
+        projectId: "vector-3b246",
+        storageBucket: "vector-3b246.appspot.com",
+        messagingSenderId: "231611112616"
+    };
+    firebase.initializeApp(config);
+    window.db = firebase.database();
+
+    // Second Firebase app (vectorsupportagent) — backs the support-call portal.
+    // Replace apiKey/appId/messagingSenderId with the values from:
+    //   Firebase Console → vectorsupportagent → Project settings → "Your apps" → Web app config.
+    window.callsFirebaseConfig = {
+        apiKey: "AIzaSyBmEfpBq0Wp-AbJnwQNzwQSAcOwTHEbIEM",
+        authDomain: "vectorsupportagent.firebaseapp.com",
+        databaseURL: "https://vectorsupportagent-default-rtdb.firebaseio.com",
+        projectId: "vectorsupportagent",
+        storageBucket: "vectorsupportagent.firebasestorage.app",
+        messagingSenderId: "898157976411",
+        appId: "1:898157976411:web:a09a3c0ec6261ba6a3987e"
+    };
+    try {
+        var callsApp = firebase.initializeApp(window.callsFirebaseConfig, 'calls');
+        window.callsDb   = callsApp.database();
+        window.callsAuth = callsApp.auth();
+    } catch (e) {
+        console.warn('Support-calls Firebase app not initialized yet:', e.message);
+    }
+</script>
+
+<link href="plugins/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+
+<link rel="stylesheet" type="text/css" href="/css/daterangepicker.css" />
+<script src="plugins/datatables/jquery.dataTables.min.js"></script>
+
+
+<link href="plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="plugins/bootstrap-tagsinput/css/bootstrap-tagsinput.css" rel="stylesheet" type="text/css" />
+<link href="plugins/fullcalendar/css/fullcalendar.min.css" rel="stylesheet" />
+<link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="assets/css/icons.css" rel="stylesheet" type="text/css" />
+<link href="assets/css/style.css" rel="stylesheet" type="text/css">
+
+<script src="assets/js/modernizr.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<body class="fixed-left">
+<!-- Begin page -->
+
+<div id="tagManagementModal" class="modal fade text-center">
+    <div class="modal-dialog" style="width:400px;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                You can create a Tag that will appear as ##tagName in the list of units that will make selecting a set of units at once easier.
+                <br clear="all"/>
+                <button type="button" onclick='Vector.saveUnitGroup();'class="m-2 btn btn-default waves-effect waves-light" data-toggle="tooltip" title="Click to save current unit selections as a #group that can be selected in the future.">Create New Tag</button>
+                <br clear="all"/>
+                Your existing unit group tags will be listed below. Click any you would like to delete.
+                <br clear="all"/>
+                <div id="existingCustomTags"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade text-center" id="loadingModal">
+    <div class="modal-dialog" style="width:200px;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <h4 class="modal-title" id="loadingModalHeader">Loading</h4>
+                <i class="fa fa-circle-o-notch fa-spin" style="font-size:5vw;"></i>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="loginwrapper" style="display:none;">
+    <form onsubmit="login(); return false;">
+        <div class="topbar">
+            <!-- LOGO -->
+            <div class="topbar-left">
+                <div class="text-center">
+                    <a href="index.html" class="logo">
+                        <i class="icon-c-logo" style="color: #f34; font-style:normal; font-size:30px; font-weight:normal;"></i>
+                        <span><img class="logoimg" src="" style="max-height:60px; max-width:100%; padding:0.5rem;"/></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <nav class="navbar-custom"></nav>
+        <div class="col-sm-12" style="margin-top:200px;">
+            <div class="mycardbox mx-auto col-sm-6">
+                <div class="row col-sm-6 mx-auto p-2">
+                    <div class="col-sm-6">Username</div>
+                    <div class="col-sm-6"><input class="form-control" id="username" type="text" /></div>
+                </div>
+                <div class="row col-sm-6 mx-auto p-2">
+                    <div class="col-sm-6">Password</div>
+                    <div class="col-sm-6"><input class="form-control" id="password" type="password"></div>
+                </div>
+                <div class="row col-sm-6 mx-auto p-2">
+                    <input class="form-control" type="submit" value="Login"/>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="wrapper" style="display:none;">
+    <!-- Top Bar Start -->
+    <div class="topbar">
+
+        <!-- LOGO -->
+        <div class="topbar-left">
+            <div class="text-center">
+                <a href="index.html" class="logo">
+                    <i class=" icon-c-logo" style="color: #f34; font-style:normal; font-size:30px; font-weight:normal;"></i>
+                    <span><img class="logoimg" src="" style="max-height:60px; max-width:100%; padding:0.5rem;"/></span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Button mobile view to collapse sidebar menu -->
+        <nav class="navbar-custom">
+            <ul class="list-inline float-right mb-0">
+                <li class="list-inline-item notification-list">
+                    <a class="nav-link waves-light waves-effect" id="btn-refresh-data" onclick="javascript:window.location.reload()" title="Refresh data">
+                        <i class="dripicons-time-reverse noti-icon"></i>
+                    </a>
+                </li>
+
+                <li class="list-inline-item notification-list">
+                    <a class="nav-link waves-light waves-effect" href="#" id="btn-fullscreen">
+                        <i class="dripicons-expand noti-icon"></i>
+                    </a>
+                </li>
+
+                <li class="list-inline-item dropdown notification-list">
+                    <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <i class="md md-face-unlock" style="font-size:22px;"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right profile-dropdown" aria-labelledby="Preview" x-placement="bottom-end" style="position: absolute; transform: translate3d(-110px, 70px, 0px); top: 0px; left: 0px; will-change: transform;">
+                        <div class="dropdown-item noti-title">
+                            <h5 class="text-overflow"><small id="userInfo">Welcome John!</small> </h5>
+                        </div>
+                        <a href="javascript:Vector.showUserSettings();" class="dropdown-item notify-item">
+                            <i class="md md-account-circle"></i> <span>Profile</span>
+                        </a>
+                        <a href="javascript:Vector.showAdminSettings();" class="dropdown-item notify-item adminOnly">
+                            <i class="md md-settings"></i> <span>Settings</span>
+                        </a>
+                        <a href="javascript:Vector.showGodmodeDomains();" class="dropdown-item notify-item godmodeOnly">
+                            <i class="md md-settings"></i> <span>Domains</span>
+                        </a>
+                        <a href="javascript:logout();" class="dropdown-item notify-item">
+                            <i class="md md-settings-power"></i> <span>Logout</span>
+                        </a>
+
+                    </div>
+                </li>
+
+            </ul>
+
+            <ul class="list-inline menu-left mb-0">
+                <li class="float-left">
+                    <button class="button-menu-mobile open-left waves-light waves-effect">
+                        <i class="dripicons-menu"></i>
+                    </button>
+                </li>
+            </ul>
+
+        </nav>
+
+    </div>
+    <!-- Top Bar End -->
+
+    <!-- ========== Left Sidebar start ========== -->
+
+    <div class="left side-menu fadeInLeft">
+        <div class="sidebar-inner slimscrollleft">
+            <!--- Divider -->
+            <div id="sidebar-menu">
+                <ul>
+                    <li class="text-muted adminOnly menu-title active-username owner-portal"></li>
+
+                    <li id="side-menu-dashboard" class="owner-portal"><a href="javascript:Vector.showUserDashboard();"><i class="md md-assessment" style="font-size:32px;"></i> <span> Dashboard </span> </a></li>
+                    <li id="side-menu-unitOverview" class="owner-portal"><a href="javascript:Vector.showUserListings()"><i class="md md-dns" style="font-size:32px;"></i> <span>Unit Overview </span> </a></li>
+                    <li id="side-menu-unitPerformance" class="owner-portal"><a href="javascript:Vector.showUserListingPerformance()"><i class="md md-event" style="font-size:32px;"></i> <span>  Unit Performance </span> </a></li>
+
+                    <li id="side-menu-calls" class="callsAccess" style="display:none;"><a href="#calls" onclick="if(window.VectorCalls){VectorCalls.showDashboard();return false;}"><i class="ion-ios-telephone"></i><span>Calls</span></a></li>
+
+                    <li class="text-muted menu-title adminOnly">Admin</li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminTodaysResume()"><i class="ion-arrow-down-a"></i><span>Today</span></a></li>
+                    <li id="side-menu-admindashboard" class="adminOnly"><a href="javascript:Vector.showAdminDashboard()"><i class="md md-assessment"></i><span>Dashboard</span></a></li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminReservations()"><i class="md md-list"></i><span>Reservations</span></a></li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminOccupancy()"><i class="ion-android-data"></i><span>Occupancy</span></a></li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminHospitality()"><i class="ion-heart"></i><span>Hospitality</span></a></li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminAnalytics()"><i class="ion-arrow-graph-up-right"></i><span>Analytics</span></a></li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminUsers()"><i class="md md-face-unlock"></i><span>Users</span></a></li>
+                    <li class="adminOnly"><a href="javascript:Vector.showAdminListings()"><i class="md md-home"></i><span>Listings</span></a></li>
+                    <li class="adminOnly side-menu">
+                        <a href="javascript:Vector.showAdminScorecard('#adminScorecard');">
+                            <i class="md md-star-outline"></i>
+                            <span>Reviews</span>
+                        </a>
+                        <ul>
+                            <li class="adminOnly"><a href="javascript:Vector.showAdminScorecard('#adminScorecard');">Scorecard</a></li>
+                            <li class="adminOnly"><a href="javascript:Vector.showAdminReviews('#adminListingReviews')">Listing Reviews</a></li>
+                            <li class="adminOnly"><a href="javascript:Vector.showAdminReviews('#adminReservationReviews')">Reservation Reviews</a></li>
+                        </ul>
+                    </li>
+                    <li class="airbnbOnly open-left"><a href="javascript:Vector.showAdminThreads()"><i class="md md-chat"></i><span>Messages </span><span class="messageCount"></span></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- ========== Left Sidebar end ========== -->
+
+    <div class="content-page">
+        <!-- Start content -->
+        <div class="content" style="padding:0px;">
+            <div class="container-fluid col-lg-12" style="padding:0px;">
+                <div id="adminDashboard" class="adminOnly rightContent">
+                    <div class="row mb-2" id="AdminDashboardFilters">
+                        <div class="col-sm-3">
+                            <input class="form-control form-inline" style="height:39px;" type="text" id="adminDateRange" />
+                        </div>
+                        <div class="pull-right col-sm-3">
+                                <select id="cityFilterSelect" onChange="Vector.setFilters($(this).val(),'city')" class="select2 select2-multiple form-control form-inline" multiple="multiple" multiple data-placeholder="City Filter"></select>
+                        </div>
+                        <div  class="pull-right col-sm-2 text-right" id="Admin_unitFilterSelectDiv">
+                            <select onChange="Vector.setFilters($(this).val(),'unit')"  id="unitFilterSelect" multiple="multiple" data-actions-box="true" data-placeholder="Unit Filter" data-live-search="true">
+                            </select>
+                        </div>
+                        <div class="pull-right col-sm-2 text-right">
+                            <select id="bedroomFilterSelect" onChange="Vector.setFilters($(this).val(),'bedroom')" class="select2 select2-multiple form-control form-inline d-none"  multiple="multiple" multiple data-placeholder="Bedroom Filter"></select>
+                        </div>
+                        <div class="pull-right col-sm-2 text-right">
+                            <button type="button" class="btn btn-default waves-effect waves-light form-control" onclick="Vector.refreshDateRangeOnCurrentView();">Apply</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="widget-bg-color-icon mycardbox ">
+                                <div class="bg-icon bg-icon-info pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa fa-money text-info" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_thismonthsrev">0</b></h4>
+                                    <p class="text-muted mb-0"><script>document.write(moment().format("MMM"));</script> Rev</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="widget-bg-color-icon mycardbox ">
+                                <div class="bg-icon bg-icon-success pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa fa-bed text-success" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_todaysrev">0</b></h4>
+                                    <p class="text-muted mb-0">Today's Rev</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="widget-bg-color-icon mycardbox ">
+                                <div class="bg-icon bg-icon-purple pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa  fa-calendar text-purple" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_todaysADR"></b></h4>
+                                    <p class="text-muted mb-0">Todays ADR</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xl-3 ">
+                            <div class="widget-bg-color-icon mycardbox">
+                                <div class="bg-icon bg-icon-pink pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa  fa-calendar-o text-pink" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_checkouts"></b></h4>
+                                    <p class="text-muted mb-0">Checkins/Checkouts</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="widget-bg-color-icon mycardbox ">
+                                <div class="bg-icon bg-icon-info pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa fa-money text-info" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_cancelled">0</b></h4>
+                                    <p class="text-muted mb-0">Cancellations Today</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="widget-bg-color-icon mycardbox ">
+                                <div class="bg-icon bg-icon-success pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa fa-bed text-success" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_cancelledfare">0</b></h4>
+                                    <p class="text-muted mb-0">Cancelled Fare Today</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="widget-bg-color-icon mycardbox ">
+                                <div class="bg-icon bg-icon-purple pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa  fa-calendar text-purple" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_occupancy"></b></h4>
+                                    <p class="text-muted mb-0">Occupancy Today</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xl-3 ">
+                            <div class="widget-bg-color-icon mycardbox">
+                                <div class="bg-icon bg-icon-pink pull-left" style="height: 50px; width: 50px;">
+                                    <i class="fa  fa-calendar-o text-pink" style="line-height: 50px;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <h4 class="text-darker"><b class="counter" id="adminDashboard_lostRev"></b></h4>
+                                    <p class="text-muted mb-0">Vacant/Lost Rev Today</p>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="mycardbox table-responsive" style="min-height: 500px">
+                                <table id='adminMonthlyRevenueByChannelChart' class='p-1 table'></table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="mycardbox" id="adminLastYearRevenue" >
+                                <div id="adminLastYearRevenueChartContainer" style="min-height: 500px"></div>
+                                <div id="adminLastYearRevenueTable" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12" id="occRevTableAdmin">
+                            <div id="occRevTable" class="mycardbox" style="min-height: 500px">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mycardbox" style="min-height: 500px">
+                                <canvas id="adminDashboardRevByCityChart" height="100"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mycardbox" style="min-height: 500px">
+                                <canvas id="adminDashboardRevenueByBookingChart" height="100"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mycardbox" style="min-height: 500px">
+                                <canvas id="adminDashboardRevenueByDayChart" height="100"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mycardbox" style="min-height: 500px">
+                                <canvas id="adminDashboardSameMonthRevenueChart" height="100"></canvas>
+                            </div>
+                        </div>
+<!--
+                        <div class="col-sm-12" style="height: 500px">
+                            <div class="mycardbox" id="rentProjectionTable">
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                   <!-- <div class="row">
+                        <div class="col-sm-12" style="min-height: 500px">
+                            <div class="mycardbox" id="todaysCheckinsTable"></div>
+                        </div>
+                    </div> -->
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="mycardbox" id="unavailableDatesTable"></div>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="row">
+                        <div class="col-sm-12" style="min-height: 500px">
+                            <div class="mycardbox" id="downLinksTable"></div>
+                    </div> -->
+                    <div class="row" id="adminUrgentAlertsRow">
+                        <div class="col-sm-12">
+                            <div class="widget-bg-color-icon mycardbox" id="adminUrgentAlertsTable">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div id="adminUsers" class="adminOnly rightContent">
+                    <h4>Users</h4>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="mycardbox">
+                                <form>
+                                    <h4>Add User</h4>
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                <label for="newuser_username">Username</label>
+                                                <input class="form-control newuser_variable" type="text" id="newuser_username"/>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                    <label for="newuser_fullname">Full name</label>
+                                                    <input class="form-control newuser_variable" type="text" id="newuser_fullname"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                    <label for="newuser_password">Password</label>
+                                                    <input class="form-control newuser_variable" type="password" id="newuser_password"/>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                                <div class="form-group sm-12">
+                                                    <label for="newuser_role">Role</label>
+                                                    <select id="newuser_role" class="custom-select">
+                                                        <option selected value="user">user</option>
+                                                        <option value="admin">admin</option>
+                                                    </select>
+                                                </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="col-lg-6    ">
+                                                <div class="form-group sm-12">
+                                                        <label for="newuser_commission">Commission</label>
+                                                        <input class="form-control newuser_variable" type="text" id="newuser_commission"/>
+                                                </div>
+                                        </div>
+                                        <div class="col-lg-6    ">
+                                                <div class="form-group sm-12">
+                                                        <label for="newuser_email">Email</label>
+                                                        <input class="form-control newuser_variable" type="email" id="newuser_email"/>
+                                                </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <button class="btn btn-info" onclick="Vector.saveUserData()">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="display:none;">
+                        <div class="col-lg-12">
+                            <div class="mycardbox">
+                                <form id="editUser">
+                                    <h4>Edit User</h4>
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                <label for="edituser_username">Username</label>
+                                                <input class="form-control newuser_variable" type="text" id="edituser_username" disabled/>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                    <label for="edituser_fullname">Full name</label>
+                                                    <input class="form-control newuser_variable" type="text" id="edituser_fullname"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="col">
+                                                <div class="form-group sm-12">
+                                                        <label for="edituser_commission">Commission</label>
+                                                        <input class="form-control newuser_variable" type="text" id="edituser_commission"/>
+                                                </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                    <label for="edituser_email">Email</label>
+                                                    <input class="form-control newuser_variable" type="email" id="edituser_email"/>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group sm-12">
+                                                <label for="edituser_password">Password</label>
+                                                <input class="form-control newuser_variable" type="password" id="edituser_password"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                    <button class="btn btn-danger m-2" onclick="Vector.deleteUser()">Delete</button>
+                                    <button class="btn btn-info m-2" onclick="Vector.saveUserData(Vector.selectedUserId)">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="mycardbox">
+                                <table id="usersTable" class=" table compact hover row-border"></table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                            <div class="col-lg-12">
+                                <div class="mycardbox" id="listingsTableSection"></div>
+                            </div>
+                    </div>
+                </div>
+                <div id="adminListings" class="adminOnly rightContent">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="mycardbox" id="adminUnlistedListingsTableSection"></div>
+                        </div>
+                        <div class="row">
+                            <div class="mycardbox" id="adminListingsTableSection"></div>
+                        </div>
+                        <div class="row">
+                            <div class="mycardbox" id="adminInactiveListingsTableSection"></div>
+                        </div>
+                        <div class="row">
+                            <div class="mycardbox" id="adminListingsBreakdownTableSection"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="adminScorecard" class="adminOnly rightContent">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-6 col-xl-3 ">
+                                <div class="widget-bg-color-icon mycardbox">
+                                    <div class="bg-icon bg-icon-pink pull-left" style="height: 50px; width: 50px;">
+                                        <i class="fa fa-calendar-o text-pink" style="line-height: 50px;"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b id="scorecard_reviewcount">0</b></h3>
+                                        <p class="text-muted mb-0">Total Reviews</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 col-xl-3">
+                                <div class="widget-bg-color-icon mycardbox ">
+                                    <div class="bg-icon bg-icon-info pull-left" style="height: 50px; width: 50px;">
+                                        <i class="fa fa-money text-info" style="line-height: 50px;"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b class="counter" id="scorecard_accuracy">0</b></h3>
+                                        <p class="text-muted mb-0">Accuracy</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 col-xl-3">
+                                <div class="widget-bg-color-icon mycardbox ">
+                                    <div class="bg-icon bg-icon-success pull-left" style="height: 50px; width: 50px;">
+                                        <i class="fa fa-bed text-success" style="line-height: 50px;"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b class="counter" id="scorecard_cleanliness">0</b></h3>
+                                        <p class="text-muted mb-0">Cleanliness</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 col-xl-3">
+                                <div class="widget-bg-color-icon mycardbox ">
+                                    <div class="bg-icon bg-icon-purple pull-left" style="height: 50px; width: 50px;">
+                                        <i class="fa fa-calendar text-purple" style="line-height: 50px;"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b id="scorecard_communication">0</b></h3>
+                                        <p class="text-muted mb-0">Communication</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="row">
+                                <div class="col-md-6 col-lg-6 col-xl-3 ">
+                                    <div class="widget-bg-color-icon mycardbox">
+                                        <div class="bg-icon bg-icon-pink pull-left" style="height: 50px; width: 50px;">
+                                            <i class="fa  fa-calendar-o text-pink" style="line-height: 50px;"></i>
+                                        </div>
+                                        <div class="text-right">
+                                            <h3 class="text-dark"><b id="scorecard_staravg">0</b></h3>
+                                            <p class="text-muted mb-0">Overall Stars Avg</p>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6 col-xl-3">
+                                    <div class="widget-bg-color-icon mycardbox ">
+                                        <div class="bg-icon bg-icon-info pull-left" style="height: 50px; width: 50px;">
+                                            <i class="fa fa-money text-info" style="line-height: 50px;"></i>
+                                        </div>
+                                        <div class="text-right">
+                                            <h3 class="text-dark"><b class="counter" id="scorecard_checkin">0</b></h3>
+                                            <p class="text-muted mb-0">Check-In</p>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6 col-xl-3">
+                                    <div class="widget-bg-color-icon mycardbox ">
+                                        <div class="bg-icon bg-icon-success pull-left" style="height: 50px; width: 50px;">
+                                            <i class="fa fa-bed text-success" style="line-height: 50px;"></i>
+                                        </div>
+                                        <div class="text-right">
+                                            <h3 class="text-dark"><b class="counter" id="scorecard_location">0</b></h3>
+                                            <p class="text-muted mb-0">Location</p>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6 col-xl-3">
+                                    <div class="widget-bg-color-icon mycardbox ">
+                                        <div class="bg-icon bg-icon-purple pull-left" style="height: 50px; width: 50px;">
+                                            <i class="fa  fa-calendar text-purple" style="line-height: 50px;"></i>
+                                        </div>
+                                        <div class="text-right">
+                                            <h3 class="text-dark"><b class="counter" id="scorecard_value">0</b></h3>
+                                            <p class="text-muted mb-0">Value</p>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12" style="min-height: 500px">
+                                <div class="mycardbox" id="reviewAveragesByMonthContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="adminReviews" class="adminOnly rightContent">
+                    <div class="row" id="adminReservationReviews">
+                        <div class="col-sm-12">
+                            <div class="mycardbox" id="editAdminReservationReviews" style="min-height: 500px; overflow-x:scroll;">
+                                <h4 class="mb-4">Reservation Reviews</h4>
+                                <button class="btn btn-small btn-outline-info mb-4" onclick="$('#newReservationReviewModal').modal();">New Row</button>
+                                <table class="table editReservationReviewsTable mt-3" style="font-size:0.7rem;">
+                                    <thead style="white-space: nowrap;">
+                                        <tr>
+                                            <th></th>
+                                            <th style="max-width:8rem;">Listing Name</th>
+                                            <th>Guest</th>
+                                            <th>Check-In</th>
+                                            <th>Check-Out</th>
+                                            <th style="min-width: 10rem;">Public Feedback</th>
+                                            <th style="min-width: 10rem;">Private Feedback</th>
+                                            <th>Stars Overall</th>
+                                            <th style="min-width: 10rem;">Accuracy</th>
+                                            <th style="min-width: 10rem;">Cleanliness</th>
+                                            <th style="min-width: 10rem;">Communication</th>
+                                            <th style="min-width: 10rem;">Check-In</th>
+                                            <th style="min-width: 10rem;">Location</th>
+                                            <th style="min-width: 10rem;">Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="adminListingReviews" class="adminOnly rightContent">
+                        <div class="col-sm-12">
+                            <div class="mycardbox" id="editAdminReviews" style="min-height: 500px; overflow-x:scroll;">
+                                <h4 class="mb-4">Listing Reviews</h4>
+                                <div class="alert alert-warning adminReviewsAlert" role="alert" style="display:none;"></div>
+                                <table class="table editReviewsTable" style="white-space: nowrap;">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">
+                                                <select
+                                                    class="selectpicker form-control"
+                                                    name="listingId"
+                                                    id="adminReviewsListingSelect"
+                                                    data-live-search="true"
+                                                >
+                                                </select>
+                                            </th>
+                                            <th><input class="form-control" requiered name="totalReviews" type="number" min="1"></th>
+                                            <th><input class="form-control" requiered name="fiveStarsPercentage" type="number" min="1" max="100"></th>
+                                            <th><input class="form-control" requiered name="overall" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><input class="form-control" requiered name="accuracy" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><input class="form-control" requiered name="cleanliness" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><input class="form-control" requiered name="communication" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><input class="form-control" requiered name="checkIn" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><input class="form-control" requiered name="location" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><input class="form-control" requiered name="value" type="number" min="1" max="5" step="0.1"></th>
+                                            <th><button class="btn btn-sm btn-default" onclick="Vector.saveReview($(this).closest('tr'));">Add</button></th>
+                                        </tr>
+                                        <tr style="font-size: 0.7rem;">
+                                            <th style="min-width:15rem;">Listing Name</th>
+                                            <th>Last Update</th>
+                                            <th>Total Reviews</th>
+                                            <th>5 Stars %</th>
+                                            <th>Overall</th>
+                                            <th>Accuracy</th>
+                                            <th>Cleanliness</th>
+                                            <th>Communication</th>
+                                            <th>Check-In</th>
+                                            <th>Location</th>
+                                            <th>Value</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="AdminTodaysResume" style="display:none;" class="rightContent">
+                    <div class="row">
+                        <div class="col-sm-12" style="min-height: 500px">
+                            <div class="mycardbox" id="todaysCheckinsTable"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12" style="min-height: 500px">
+                            <div class="mycardbox" id="todaysCheckoutsTable"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="adminReservations" class="adminOnly rightContent">
+                    <div class="mycardbox" id="adminReservationsCardBox">
+                        <div class="row">
+                            <div class="col-sm-3" id="adminReservationsTitle"><h3>Reservations</h3></div>
+                            <div class="col-sm-9">
+                                <div class="checkbox checkbox-custom pull-left p-2">
+                                    <input id="reservations_checkinCheckbox" type="checkbox" checked onchange="Vector.generateAdminReservationTable()">
+                                    <label for="reservations_checkinCheckbox">Checkin</label>
+                                </div>
+                                <div class="checkbox checkbox-custom pull-left p-2">
+                                    <input id="reservations_confirmedAtCheckbox" type="checkbox" onchange="Vector.generateAdminReservationTable()">
+                                    <label for="reservations_confirmedAtCheckbox">Confirmed At</label>
+                                </div>
+                                <div class="checkbox checkbox-custom pull-left p-2">
+                                    <input id="reservations_checkoutCheckbox" type="checkbox" onchange="Vector.generateAdminReservationTable()">
+                                    <label for="reservations_checkoutCheckbox">Checkout</label>
+                                </div>
+                                <div class="checkbox checkbox-custom pull-left p-2">
+                                    <input id="reservations_cancelledCheckbox" type="checkbox" onchange="Vector.generateAdminReservationTable()">
+                                    <label for="reservations_cancelledCheckbox">Cancelled</label>
+                                </div>
+                            </div>
+                            <table id="adminReservationsTable" width="100%" style="width:100%" class="w-100"></table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div id="adminTodaysReservations">
+                                <div class="mycardbox" id="todaysReservationsTable"></div>
+                            </div>
+                       </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12" style="min-height: 500px">
+                            <div class="mycardbox" id="cancelledReservationsTable"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12" style="min-height: 500px">
+                            <div class="mycardbox" id="cancelledReservationsChartContainer"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="adminListingTabs" class="adminOnly rightContent">
+                    <div class="col-lg-12">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a href="#adminListingPerformance" data-toggle="tab" aria-expanded="false" class="nav-link active show">
+                                    Listing Performance
+                                </a>
+                            </li>
+                            <li class="nav-item" onclick="Vector.updateCompMapZoom();">
+                                <a href="#adminListingComps" data-toggle="tab" aria-expanded="true" class="nav-link">
+                                    Comp Select
+                                </a>
+                            </li>
+                            <li class="nav-item" onclick="Vector.fillCompTracker()">
+                                <a href="#adminListingCompTracker" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                    Comp Tracker
+                                </a>
+                            </li>
+                            <li class="nav-item" onclick="Vector.fillVacancyOptimizer()">
+                                <a href="#adminListingAnalytics" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                    Analytics
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#adminListingSettings" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                    Settings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#adminPriceLabsSettings" data-toggle="tab" aria-expanded="false" class="nav-link" onClick="Vector.getPriceLabsSettings(Vector.selectedListingId)">
+                                    Price Labs Settings
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" style="padding:10px;">
+                            <div class="tab-pane active show" id="adminListingPerformance">
+                            </div>
+                            <div class="tab-pane" id="adminListingAnalytics">
+                                <div id="vacancyOptimizer">
+                                    <div style="float:left; ">
+                                        Date Range: <input style="width:214px; height:30px;" type="text" id="vacancyOptimizerDateRange" />
+                                    </div>
+                                    <div id="dateRangeContainer"></div>
+                                </div>
+                                <div class="row" style="clear:both;">
+                                    <div class="col-sm-12">
+                                        <div id="monthlyTable" class="mycardbox"></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 ">
+                                        <div id="dailyTable" class="mycardbox"></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 mycardbox">
+                                        <div id="monthlyRevenueChartContainer"></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 mycardbox">
+                                        <div id="monthlyOccChartContainer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="adminListingCompTracker" >
+                                <div id="compTracker" class="contentPanel">
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="adminListingComps" >
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div id="compSelectorFilters">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-3 col-sm-3" style="float:left; width: 150px;">
+                                                    <select id="bedroomsCompSelectorFilter" class="selectpicker">
+                                                        <option value="0">0 Bedrooms</option><option value="1">1 Bedroom</option><option value="2">2 Bedrooms</option>
+                                                        <option value="3">3 Bedrooms</option><option value="4">4 Bedrooms</option><option value="5">5 Bedrooms</option>
+                                                        <option value="6">6 Bedrooms</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3" style="float:left; width: 155px;">
+                                                    <select id="bathroomsCompSelectorFilter" class="selectpicker">
+                                                        <option value="1">1 Bathroom</option><option value="2">2 Bathrooms</option><option value="3">3 Bathrooms</option>
+                                                        <option value="4">4 Bathrooms</option><option value="5">5 Bathrooms</option><option value="6">6 Bathrooms</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3" style="float:left; width: 150px;">
+                                                    <select id="reviewsCompSelectorFilter" class="selectpicker">
+                                                        <option value="0">Any Reviews</option>
+                                                        <option value="1">1 Review</option>
+                                                        <option value="2">2 Reviews</option>
+                                                        <option value="3">3 Reviews</option>
+                                                        <option value="4">4 Reviews</option>
+                                                        <option value="5">5 Reviews</option>
+                                                        <option value="10">10 Reviews</option>
+                                                        <option value="20">20 Reviews</option>
+                                                        <option value="50">50 Reviews</option>
+                                                        <option value="100">100 Reviews</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3" style="float:left; width: 150px;">
+                                                    <select id="guestsCompSelectorFilter" class="selectpicker">
+                                                        <option value="any">Any Guests</option>
+                                                        <option value="2">2 Guests</option>
+                                                        <option value="3">3 Guests</option>
+                                                        <option value="4">4 Guests</option>
+                                                        <option value="5">5 Guests</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="padding-bottom: 10px">
+                                                <div class="col-md-9" style="display:none;">
+                                                <div class="row p-2">
+                                                    <div style="width:150px; float:left;">Occupancy:</div><div style="float:left;" id="occupancySlider"></div><br/>
+                                                </div>
+                                                <div class="row p-2">
+                                                    <div style="width:150px; float:left;">Price:</div><div style="float:left;" id="priceSlider"></div>
+                                                </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <button type="submit" style="float:left; margin-top:30px;" class="btn btn-default btn-custom apply" onClick="Vector.applyCompSelectorFilters();">Apply</button>
+                                                    <button type="button" style="float:left; margin:30px 0 0 10px;" class="btn btn-default waves-effect waves-light" onclick="javascript:$('#addCompsFromAirbnb').modal('toggle');">Add From Airbnb</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="overflow:hidden;  margin-right: calc(100% - 770px); width: 770px; z-index:100; height: 90px; padding-top:5px; display:inline-block; background-color:#f1f3f9; overflow-x:scroll; padding-left: 10px; padding-right: 10px;">
+                                            <div id="selectedCompList" style="white-space:nowrap;"></div>
+                                        </div>
+
+                                        <div id="compListContainer" style="height: calc(100vh - 380px); overflow:hidden;">
+                                            <div id="compList" style="display: inline-block;height: calc(100vh - 380px); overflow:scroll; width: 790px;"></div>
+                                        </div>
+                                        <div id="compBoxShadow" style="z-index:1;box-shadow: 0px 5px 10px rgba(0,0,0,.5);width:1px;height:100%;top: 0px;right: 0px;position:absolute;"></div>
+                                    </div>
+
+                                    <div class="mapCount" >Count:&nbsp;<span style="font-size:30px; line-height:40px; font-weight:bolder;" id="compSelectorResultCount"></span></div>
+                                    <div id="compmap" class="col-md-4" style="height: calc(100vh - 140px);"></div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="adminListingSettings">
+                                <div class="col-md-6">
+                                    <label class="control-label">Lease Type</label>
+                                    <select id="leaseType"  role="tablist" onChange="Vector.saveListing();$('.leaseTypeTab').hide(); $('#leaseTypeTab'+$(this)[0].selectedIndex).show();" class="form-control nav nav-tabs">
+                                        <option href="#fixedLeaseSettings" aria-controls="fixedLeaseSettings">Fixed Lease + Expenses</option>
+                                        <option href="#fixedManagementFee"aria-controls="fixedManagementFeeDiv">Fixed Management Fee</option>
+                                        <option href="#percentManagementFee" aria-controls="percentManagementFeeDiv">Percent Management Fee</option>
+                                    </select><br/>
+                                    <div class="tab-content">
+                                        <div class="tab-pane active show leaseTypeTab" id="leaseTypeTab0">
+                                            <label class="control-label">Lease Cost</label><input onChange="Vector.saveListing()" type=text id="leaseCost" class="form-control"/>
+                                            <label class="control-label">Utilities Cost</label><input onChange="Vector.saveListing()" type="text" id="utilitiesCost" class="form-control"/>
+                                            <label class="control-label">Furniture Cost</label><input onChange="Vector.saveListing()" type="text" id="furnitureCost" class="form-control"/>
+                                        </div>
+                                        <div class="tab-pane leaseTypeTab" id="leaseTypeTab1">
+                                            <label class="control-label">Fixed Management Fee</label><input onchange="Vector.saveListing()" type="text" id="fixedManagementFee" class="form-control"/>
+                                        </div>
+                                        <div class="tab-pane leaseTypeTab" id="leaseTypeTab2">
+                                            <label class="control-label">Percent Management Fee</label><input onchange="Vector.saveListing()" type="text" id="percentManagementFee" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <label class="control-label">Lease Start Date: </label><input onChange="Vector.saveListing()" type="text" id="leaseStartDate" placeholder="xxxx-xx-xx" class="form-control"/>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="adminPriceLabsSettings">
+                                <div class="col-md-6">
+                                    <form id="priceLabsSettingsForm">
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <label for="priceLabsMinPrice">Min Price</label>
+                                                <input type="text" id="priceLabsMinPrice" class="form-control" name="min">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <label for="priceLabsBasePrice">Base Price</label>
+                                                <input type="text" id="priceLabsBasePrice" class="form-control" name="base">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <label for="priceLabsMaxPrice">Max Price</label>
+                                                <input type="text" id="priceLabsMaxPrice" class="form-control" name="max">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <br>
+                                                <button class="btn btn-default" onclick="event.preventDefault();Vector.setPriceLabsSettings(Vector.selectedListingId);">Save</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="userSettings" class="rightContent">
+                    <div class="row">
+                        <div class="mycardbox col-md-12">
+                            <h4>Profile</h4>
+                            <form class="userProfileForm">
+                                <h5 class="username"></h5>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6 col-sm-12">
+                                        <label for="userFullname">Full Name</label>
+                                        <input class="form-control" type="text" name="userFullname">
+                                    </div>
+                                    <div class="form-group col-md-6 col-sm-12">
+                                        <label for="userPassword">New Password</label>
+                                        <input class="form-control" type="password" name="userPassword">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6 col-sm-12">
+                                        <label for="userEmail">Email</label>
+                                        <input class="form-control" type="email" name="userEmail">
+                                    </div>
+                                </div>
+                            </form>
+                            <hr>    
+                            <h4>Currency</h4>
+                            <form class="userCurrencyForm form-inline">
+                                <div class="form-group">
+                                    <label for="userCurrency" class="mr-sm-4" >Select your currency</label>
+                                    <select class="form-control mr-sm-4" name="userCurrency" id="userCurrencySelect">
+                                        <option value="usd">USD</option>
+                                        <option value="euro">Euro</option>
+                                        <option value="pound">Pound</option>
+                                    </select>
+                                </div>
+                            </form>
+                            <hr>
+                            <button class="btn btn-default mt-2" onclick="Vector.updateUsersProfile(user.user_id)">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminSettings" class="adminOnly rightContent">
+                    <div class="row">
+                        <div class="mycardbox col-md-12">
+                            <h2>Integrations</h2><hr>
+                            <form class="form-inline" id="newIntegration">
+                                <h6 class="mb-2 mr-sm-4">
+                                    <i class="ion-plus"></i> Add New
+                                </h6>
+                                <select id="newIntegrationType" class="form-control  mb-2 mr-sm-4" onchange="Vector.displayIntegrationsInputs(this)">
+                                    <option>Guesty</option>
+                                    <option>PriceLabs</option>
+                                </select>
+                                <input id="newIntegrationKey" placeholder="Key" type="text" class="form-control  mb-2 mr-sm-4"/>
+                                <input id="newIntegrationSecret" placeholder="Secret" type="text" class="form-control  mb-2 mr-sm-4"/>
+                                <button class="btn btn-default btn-sm mb-2" onclick="Vector.addNewIntegration()">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="mycardbox col-md-12" id="integrationsTable"></div>
+                    </div>
+                    <div class="row">
+                            <div class="mycardbox col-md-12">
+                                <h6>Custom Logo</h6>
+                                <button class="btn bnt-warning deleteLogo" style="display:none" onclick="Vector.deleteLogo(event)">Delete Custom Logo</button>
+                                <form enctype="multipart/form-data" class="mt-4 mb-2" onsubmit="Vector.saveLogo(event)">
+                                    <div class="form-row">
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" required>
+                                                <label class="custom-file-label">Choose logo...</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <button type="submit" class="btn btn-default">Save</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="alert alert-info logoUploadAlert" role="alert" style="display:none;"></div>
+                            </div>
+                        </div>
+                </div>
+                <div id="godmodeDomains" class="godmodeOnly rightContent">
+                    <div class="row">
+                        <div id="editDomain" class="col-md-12 mycardbox">
+                            <form>
+                                <h4><i class="ion-edit"></i> Edit Domain</h4>
+                                <div class="form-row">
+                                    <div class="col">
+                                        <div class="form-group sm-12">
+                                            <label for="editDomainEmail">Email</label>
+                                            <input id="editDomainEmail" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col domain-table-checkbox-col">
+                                        <div class="form-group sm-12">
+                                            <div class="checkbox checkbox-custom p-2">
+                                                <input id="editDomainOwnerPortal" type="checkbox">
+                                                <label for="editDomainOwnerPortal">Owner Portal</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-default waves-effect waves-light">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="newDomain" class="col-md-12 mycardbox">
+                            <form>
+                                <h4><i class="ion-plus"></i> Add New Domain</h4>
+                                <div class="form-row">
+                                    <div class="col">
+                                        <div class="form-group sm-12">
+                                            <label for="newDomainName">Name</label>
+
+                                            <input id="newDomainName" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col domain-table-checkbox-col">
+                                        <div class="form-group sm-12">
+                                            <div class="checkbox checkbox-custom p-2">
+                                                    <input id="newDomainOwnerPortal" type="checkbox">
+                                                    <label for="newDomainOwnerPortal">Owner Portal</label>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col">
+                                        <div class="form-group sm-12">
+                                            <label for="newDomainUsername">Username</label>
+                                            <input id="newDomainUsername" type="text" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group sm-12">
+                                            <label for="newDomainPassword">Password</label>
+                                            <input id="newDomainPassword" type="text" class="form-control"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group sm-12">
+                                            <label for="newDomainEmail">Email</label>
+                                            <input id="newDomainEmail" type="text" class="form-control"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-default waves-effect waves-light" onclick="Vector.addDomain();">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="row">
+                            <div class="mycardbox col-md-12" id="godmodeDomainsTable">
+                            </div>
+                    </div>
+                </div>
+                </div>
+        <div id="adminOccupancy" class="adminOnly rightContent">
+            <div class="row">
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="widget-bg-color-icon mycardbox ">
+                        <div class="bg-icon bg-icon-info pull-left">
+                            <i class="fa fa-money text-info"></i>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="text-dark"><b class="counter" id="adminOccupancyVacanciesTonight">0</b></h3>
+                            <p class="text-muted mb-0">Vacant Tonight</p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="widget-bg-color-icon mycardbox ">
+                        <div class="bg-icon bg-icon-success pull-left">
+                            <i class="fa fa-bed text-success"></i>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="text-dark"><b class="counter" id="adminOccupancyLostRevenue">0</b></h3>
+                            <p class="text-muted mb-0">Lost Revenue</p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mycardbox col-sm-12" id="adminOccupancyCardBox">
+                <h3>Occupancy</h3>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="mycardbox" id="vacantOccupancyLookaheadTable"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="mycardbox" id="adminHorizontalOccupancyLookaheadCardBox" style="min-height: 600px"></div>
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-sm-12">
+                    <div class="mycardbox" id="occupancyLookaheadCardbox">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="row">
+                                    <div class="col-sm-3" id="adminOccupancyLookaheadTitle"><h4 class='m-t-0 header-title'>Occupancy</h4><br><br></div>
+                                    <div class="col-sm-9">
+                                        <div class="checkbox checkbox-custom pull-left p-2">
+                                            <input id="occupancy_excludeInactiveListings" type="checkbox" checked onchange="Vector.generateOccupancyLookaheadTable()">
+                                            <label for="occupancy_excludeInactiveListings">Exclude inactive listings</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="occupancyLookaheadTable"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="mycardbox" id="occupancyVsCompAVGTable"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="mycardbox" id="occupancyVsCompAVGTableNext30"></div>
+                </div>
+            </div>
+        </div>
+        <div id="adminAnalytics" class="adminOnly rightContent">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="mycardbox" style="height: 500px">
+                        <canvas id="adminDashboardAdvancedBookingTotal" height="100"></canvas>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="mycardbox" style="height: 500px;">
+                        <canvas id="adminDashboardADRvDBA" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="adminRevParChartContainer" class="mycardbox" style="min-height: 500px">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12" style="min-height: 500px">
+                    <div class="mycardbox" id="nextYearAvgVsCompAdr"></div>
+                </div>
+            </div>
+        </div>
+        <div id="adminHospitality" class="adminOnly rightContent">
+            <div class="row">
+                <div class="col-md-6 col-lg-6 col-xl-3 ">
+                    <div class="widget-bg-color-icon mycardbox">
+                        <div class="bg-icon bg-icon-pink pull-left" style="height: 50px; width: 50px;">
+                            <i class="fa  fa-calendar-o text-pink" style="line-height: 50px;"></i>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="text-dark"><b class="counter activeListingsCount" id="adminHospitality_checkouts"></b></h3>
+                            <p class="text-muted mb-0">Checkouts Today</p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="widget-bg-color-icon mycardbox ">
+                        <div class="bg-icon bg-icon-info pull-left" style="height: 50px; width: 50px;">
+                            <i class="fa fa-money text-info" style="line-height: 50px;"></i>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="text-dark"><b class="counter" id="adminHospitality_cleanings">0</b></h3>
+                            <p class="text-muted mb-0">Cleanings Scheduled</p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="widget-bg-color-icon mycardbox ">
+                        <div class="bg-icon bg-icon-success pull-left" style="height: 50px; width: 50px;">
+                            <i class="fa fa-bed text-success" style="line-height: 50px;"></i>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="text-dark"><b class="counter" id="adminHospitality_cleanings_completed">0</b></h3>
+                            <p class="text-muted mb-0">Cleanings Completed</p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="widget-bg-color-icon mycardbox ">
+                        <div class="bg-icon bg-icon-purple pull-left" style="height: 50px; width: 50px;">
+                            <i class="fa  fa-calendar text-purple" style="line-height: 50px;"></i>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="text-dark"><b class="counter activeListingsCount" id="adminHospitality_blah"></b></h3>
+                            <p class="text-muted mb-0">Coming soon</p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-sm-12">
+                <div class="mycardbox">
+                    <canvas id="adminHospitalityCleaningChart" height="100"></canvas>
+                </div>
+            </div>
+            <div id="picTest">
+                Upload Picture:
+                <input type="file" id="imageUpload">
+                <input type="button" value="Upload">
+                <img src="" height="100" style="height:100px" id="imageUploadPreview">
+                <span id="allMetaData"></span>
+            </div>
+        </div>
+        <div id="adminThreads" class="adminOnly rightContent">
+            <div class="row" style="height:100%;">
+                <div id="Threads" class="col-sm-4" style="height:100%; overflow-y:scroll;"></div>
+                <div class="col-sm-8" style="height:100%; overflow-y:scroll;">
+                    <div class="row">
+                        <div class="col-sm-8" id="ThreadComments">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="userDashboard" class="rightContent" style="display:none;">
+
+                <div class="row mb-2">
+                    <div class="col-md-6 col-lg-6 col-xl-3">
+                        <input type="text" id="userDateRange" class='btn form-control form-inline pull-left' readonly="readonly" style="background-color:#fff;text-align:center" />
+                    </div>
+                    <div class="col-md-6 col-lg-6 col-xl-3 pull-right text-right" id="User_unitFilterSelectDiv">
+                    </div>
+                    <div class="col-md-6 col-lg-6 col-xl-6">
+                        <button id="unitGroupManageButton" type="button" onclick='Vector.showTagManagementModal();' class="btn btn-default waves-effect waves-light pull-left">Manage</button>
+                        <button type="button" class="adminOnly btn btn-default waves-effect waves-light pull-right fa fa-file-excel-o" onClick="Vector.adminExportUserMonthExcel();"></button>
+                        <button type="button" class="btn btn-default waves-effect waves-light pull-right" onclick="Vector.getPdf()">Owner Statement PDF</button>
+                        <button type="button" class="btn btn-default waves-effect waves-light pull-right mr-2" onclick="Vector.exportUserMonth()">Owner Statement CSV</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-lg-6 col-xl-3">
+                        <div class="widget-bg-color-icon mycardbox ">
+                            <div class="bg-icon bg-icon-info pull-left">
+                                <i class="fa fa-money text-info"></i>
+                            </div>
+                            <div class="text-right">
+                                <h3 class="text-dark"><b class="counter" id="userDashboard_rev">0</b></h3>
+                                <p class="text-muted mb-0">Revenue</p>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-6 col-xl-3">
+                        <div class="widget-bg-color-icon mycardbox ">
+                            <div class="bg-icon bg-icon-success pull-left">
+                                <i class="fa fa-bed text-success"></i>
+                            </div>
+                            <div class="text-right">
+                                <h3 class="text-dark"><b class="counter" id="userDashboard_adr">0</b></h3>
+                                <p class="text-muted mb-0">ADR</p>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-6 col-xl-3">
+                        <div class="widget-bg-color-icon mycardbox ">
+                            <div class="bg-icon bg-icon-purple pull-left">
+                                <i class="fa  fa-money text-purple"></i>
+                            </div>
+                            <div class="text-right">
+                                <h3 class="text-dark"><b class="counter activeListingsCount" id="userDashboard_occ"></b></h3>
+                                <p class="text-muted mb-0">Occupancy</p>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-6 col-xl-3 ">
+                        <div class="widget-bg-color-icon mycardbox">
+                            <div class="bg-icon bg-icon-pink pull-left">
+                                <i class="fa  fa-calendar-o text-pink"></i>
+                            </div>
+                            <div class="text-right owner-portal">
+                                <h3 class="text-dark"><b class="counter activeListingsCount" id="userDashboard_ownerPayout"></b></h3>
+                                <p class="text-muted mb-0">Owner Payout</p>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Monthly Charts</h3>
+                <div class="row">
+                    <div class="col-sm-6" style="min-height:500px;">
+                        <div class="mycardbox" style="min-height:500px;">
+                                <canvas id="dashboardRevChart" height="500"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mycardbox" style="height:500px;">
+                            <canvas id="dashboardAdrChart" height="500"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mycardbox" style="height:500px;">
+                            <canvas id="dashboardOccChart" height="500"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mycardbox" style="height:500px;">
+                            <canvas id="dashboardStayLengthChart" height="500"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="mycardbox" id="dashboardLastYearRevenue">
+                            <div id="dashboardLastYearRevenueChartContainer"  style="min-height:500px;"></div>
+                            <div id="dashboardLastYearRevenueTable" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12" id="occRevTableUser">
+                    </div>
+                </div>
+        </div>
+        <div id="userListings" class="row rightContent" style="display:none;">
+            <div class="col-sm-12">
+                <h1>Listings</h1>
+                <div class="mycardbox">
+                    <div class="row">
+                        <table id="userListingsTable" width="100%" style="width:100%" class="w-100"></table>
+                    </div>
+                </div>
+                <div class="mycardbox adminOnly">
+                    <div class="form-row">
+                        <div class="col-sm-4"><label for="user_editlistingid">Modify Listings</label></div>
+                        <div class="col">
+                            <div class="form-group sm-12">
+                                <input class="form-control" placeholder="enter listing guesty id" type="text" id="user_editlistingid"/>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group sm-12">
+                                <button class="btn btn-info" onclick="Vector.addListingToUser()">Add</button>
+                                <button class="btn btn-info" onclick="Vector.removeListingFromUser()">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="userListingsPerformance" class="rightContent" style="display:none;">
+                    <div class="col-sm-12" id="userListingPerformanceContainer">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <h4>Unit Performance</h4>
+                            </div>
+                            <div class="col-sm-8">
+                                <select class="form-control listingSelect"
+                                        onchange="Vector.selectListing($(this).val());if(Vector.isAdmin()) Vector.showAdminListingPerformance(); else Vector.showUserListingPerformance(); Vector.getReservationData();"></select>
+                            </div>
+                        </div>
+                        <div class="row unitPerformanceStats">
+                            <div class="col-md-6 col-lg-6 col-xl-3">
+                                <div class="widget-bg-color-icon mycardbox ">
+                                    <div class="bg-icon bg-icon-info pull-left">
+                                        <i class="fa fa-money text-info"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b class="counter" id="rangeNetRevenue">0</b></h3>
+                                        <p class="text-muted mb-0">Revenue</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 col-xl-3">
+                                <div class="widget-bg-color-icon mycardbox ">
+                                    <div class="bg-icon bg-icon-success pull-left">
+                                        <i class="fa fa-bed text-success"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b class="counter" id="rangeADR">0</b></h3>
+                                        <p class="text-muted mb-0">Avg Daily Rate</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 col-xl-3">
+                                <div class="widget-bg-color-icon mycardbox ">
+                                    <div class="bg-icon bg-icon-purple pull-left">
+                                        <i class="fa  fa-calendar text-purple"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b class="counter" id="rangeOccupancy"></b></h3>
+                                        <p class="text-muted mb-0">Occupancy</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 col-xl-3 ">
+                                <div class="widget-bg-color-icon mycardbox">
+                                    <div class="bg-icon bg-icon-pink pull-left">
+                                        <i class="fa  fa-calendar-o text-pink"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <h3 class="text-dark"><b class="counter" id="rangeOwnerPayout"></b></h3>
+                                        <p class="text-muted mb-0">Owner Payout</p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="unitPerformanceCalendar"></div>
+                        </div>
+                        <div class="row">
+                                <div class="mycardbox col-sm-12" id="userReservationsCardBox">
+                                    <h3>Reservations</h3>
+                                    <table id="userReservationsTable" width="100%" style="width:100%" class="w-100"></table>
+                                </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div id="listingReviewsChartContainer" class="mycardbox" ></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div id="reservationReviewsChartContainer" class="mycardbox" ></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        <!-- ============ Support calls portal (bland.ai) ============ -->
+        <div id="callsDashboard" class="rightContent callsAccess" style="display:none;">
+            <div class="row">
+                <div class="col-sm-12"><h4>Support calls</h4></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3"><div class="mycardbox text-center"><h2 id="callsMetricToday">0</h2><p class="text-muted mb-0">Calls today</p></div></div>
+                <div class="col-md-3"><div class="mycardbox text-center"><h2 id="callsMetricWeek">0</h2><p class="text-muted mb-0">Last 7 days</p></div></div>
+                <div class="col-md-3"><div class="mycardbox text-center"><h2 id="callsMetricTransferred">0</h2><p class="text-muted mb-0">Transferred (total)</p></div></div>
+                <div class="col-md-3"><div class="mycardbox text-center"><h2 id="callsMetricAllTime">0</h2><p class="text-muted mb-0">All-time calls</p></div></div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-md-8">
+                    <div class="mycardbox">
+                        <h5>Calls per day — last 30 days</h5>
+                        <div style="position:relative;height:160px;"><canvas id="callsDailyChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mycardbox">
+                        <h5>Filter</h5>
+                        <label for="callsListingFilter" class="text-muted" style="font-size:0.85em;">Listing</label>
+                        <select id="callsListingFilter" class="form-control">
+                            <option value="">All listings</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-sm-12">
+                    <div class="mycardbox">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#callsLiveTab">Live <span class="badge badge-primary" id="callsLiveBadge" style="display:none;">0</span></a></li>
+                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#callsRecentTab">Recent</a></li>
+                        </ul>
+                        <div class="tab-content mt-2">
+                            <div class="tab-pane fade show active" id="callsLiveTab">
+                                <p class="text-muted" id="callsDashboardStatus">No active calls.</p>
+                                <table id="callsLiveTable" class="table table-hover w-100">
+                                    <thead><tr>
+                                        <th>Started</th><th>Caller</th><th>Listing</th><th>Status</th><th>Transfer</th><th></th>
+                                    </tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" id="callsRecentTab">
+                                <table id="callsRecentTable" class="table table-hover w-100">
+                                    <thead><tr>
+                                        <th>Started</th><th>Caller</th><th>Listing</th><th>Status</th><th>Summary</th><th></th>
+                                    </tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="callDetail" class="rightContent callsAccess" style="display:none;">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h4><span id="callDetailTitle">Call</span>
+                        <small class="text-muted" id="callDetailStatus"></small></h4>
+                    <div class="mycardbox" id="callContextBox">
+                        <div id="callContextBody" class="text-muted">Looking up caller...</div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="mycardbox">
+                        <div id="callControls">
+                            <button id="btnAcceptTransfer" class="btn btn-primary" style="display:none;">Accept transfer</button>
+                            <button id="btnToggleListen" class="btn btn-default">Start listening</button>
+                            <button id="btnTakeCall" class="btn btn-success" style="display:none;">Take call on my phone</button>
+                        </div>
+                        <div id="callAudioMeta" class="text-muted mt-2" style="font-size:0.85em;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-sm-12">
+                    <div class="mycardbox">
+                        <h5>Live transcript</h5>
+                        <div id="callTranscript" style="max-height:55vh; overflow-y:auto; font-family: monospace; font-size: 0.9em;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ============ end support calls portal ============ -->
+    </div>
+</div>
+<div id="listingSmall" class="listingSmall" style="display:none;position:relative; cursor:pointer;float:left; margin-left:10px; margin-top:10px; width:370px; height:220px;">
+    <div class="hoverArrow hoverArrowLeft"></div>
+    <div class="hoverArrow hoverArrowRight"></div>
+    <div class="thumbContainer" style="width:254px; height: 170px; position:absolute; left:0px; top:0px; overflow:hidden;">
+        <img class="listingThumb" style="width:254px; height:170px;">
+    </div>
+    <div class="squaredTwo">
+        <input class="squaredTwoInput" type="checkbox" class="listingcheck" >
+        <label></label>
+    </div>
+    <div class="statusMessage" style="position:absolute; display:none; top:50%; left:20px; background-color: rgba(200,200,200,.8); width:170px; padding:10px; height:50px; line-height:50px; color:#a00;"></div>
+    <div class="detailsContainer">
+        <div class="featured-list-in">
+            <div class="col-xs-12">
+                <p> <span class="listingBedrooms"></span> <span><img src="images/bedroom.png" alt=" " title=" " img="img-responsive"> Bedrooms </span> </p>
+            </div>
+            <div class="col-xs-12">
+                <p> <span class="listingBeds"></span> <span><img src="images/bed.png" alt=" " title=" " img="img-responsive"> Beds</span> </p>
+            </div>
+            <div class="col-xs-12">
+                <p> <span class="listingBathrooms"></span><span><img src="images/bathroom.png" alt=" " title=" " img="img-responsive"> Bathrooms</span> </p>
+            </div>
+            <div class="col-xs-12">
+                <p> <span class="listingGuests"></span><span><img src="images/guest.png" alt=" " title=" " img="img-responsive"> Guests</span> </p>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute; left: 5px; top: 5px; color:#ddd; bottom: 14px; font-size:12px; display:none;" class="removeLink">
+        <a href="#">Remove</a>
+    </div>
+    <div class="listingStars"></div>
+    <div class="listingPriceTag">
+        <div class="listingPriceTagTopLeft"></div>
+        <div class="listingPriceTagBottomLeft"></div>
+        <div class="listingPrice"></div>
+    </div>
+    <div class="listingReviews"></div>
+    <div class="listingName" style="position:absolute; background-color:#f4f6f9; font-weight:bold; text-align:center; font-size:18px; line-height:50px; bottom:0px; left:0px; width:100%; height:50px; overflow:hidden; white-space:nowrap;"></div>
+</div>
+<!-- Reservation Review Modal -->
+<div class="modal fade" id="newReservationReviewModal" tabindex="-1" role="dialog" aria-labelledby="New Reservation Review" aria-hidden="true">
+    <div class="modal-dialog  modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Reservation Review</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form onsubmit="Vector.saveReservationReview(event);">
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-warning adminReservationReviewsAlert" role="alert" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <select
+                                class="selectpicker"
+                                id="adminReservationReviewsListingSelect"
+                                onchange="Vector.updateReservationReviewsSelect(event);"
+                                data-live-search="true"
+                                >
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select
+                                class="selectpicker form-control"
+                                name="reservationId"
+                                id="adminReservationReviewsReservationSelect"
+                                data-live-search="true"
+                                onchange="Vector.updateRevationReviewsFields(event)"
+                                >
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-md-4">
+                                <label>Guest: </label>
+                                <span class="reservationField guest">Example Guest</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Check In: </label>
+                                <span class="reservationField checkIn">2019-08-31</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Check Out: </label>
+                                <span class="reservationField checkOut">2019-09-7</span>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-md">
+                                <label for="overall">Overall: </label>
+                                <input class="form-control" requiered name="overall" type="number" min="1" max="5">
+                            </div>
+                            <div class="col-md">
+                                <label for="accuracy">Accuracy: </label>
+                                <input class="form-control" requiered name="accuracy" type="number" min="1" max="5">
+                            </div>
+                            <div class="col-md">
+                                <label for="cleanliness">Cleanliness: </label>
+                                <input class="form-control" requiered name="cleanliness" type="number" min="1" max="5">
+                            </div>
+                            <div class="col-md">
+                                <label for="communication">Communication: </label>
+                                <input class="form-control" requiered name="communication" type="number" min="1" max="5">
+                            </div>
+                            <div class="col-md">
+                                <label for="checkIn">Check-In: </label>
+                                <input class="form-control" requiered name="checkIn" type="number" min="1" max="5">
+                            </div>
+                            <div class="col-md">
+                                <label for="location">Location: </label>
+                                <input class="form-control" requiered name="location" type="number" min="1" max="5">
+                            </div>
+                            <div class="col-md">
+                                <label for="value">Value: </label>
+                                <input class="form-control" requiered name="value" type="number" min="1" max="5">
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-md-6">
+                                <label for="feedbackPublic">FeedbackPublic</label>
+                                <textarea class="form-control" requiered name="feedbackPublic"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="feedbackPrivate">FeedbackPrivate</label>
+                                <textarea class="form-control" requiered name="feedbackPrivate"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-md-6">
+                                <label for="feedbackAccuracy">FeedbackAccuracy</label>
+                                <textarea class="form-control" requiered name="feedbackAccuracy"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="feedbackCleanliness">FeedbackCleanliness</label>
+                                <textarea class="form-control" requiered name="feedbackCleanliness"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-md-6">
+                                <label for="feedbackCommunication">FeedbackCommunication</label>
+                                <textarea class="form-control" requiered name="feedbackCommunication"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="feedbackCheckIn">FeedbackCheckIn</label>
+                                <textarea class="form-control" requiered name="feedbackCheckIn"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-md-6">
+                                <label for="feedbackLocation">FeedbackLocation</label>
+                                <textarea class="form-control" requiered name="feedbackLocation"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="feedbackValue">FeedbackValue</label>
+                                <textarea class="form-control" requiered name="feedbackValue"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button class="btn btn-default" type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ADRvDBA Modal -->
+<div class="modal fade" id="ADRvDBASettings" tabindex="-1" role="dialog" aria-labelledby="ADRvDBA Settings" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">ADR vs Booking Window Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="col">
+                            <label for="maxDBA">Max Booking Window</label>
+                            <input type="number" name="maxDBA" class="form-control maxDBA" placeholder="90" value="90" min="1">
+                        </div>
+                        <div class="col">
+                            <label for="maxADR">Max ADR</label>
+                            <input type="number" name ="maxADR" class="form-control maxADR" placeholder="600" value="600" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default" onClick="javascript:Vector.updateADRvDBA()">Update Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- AddCompsFromAirbnb Modal -->
+<div class="modal fade" id="addCompsFromAirbnb" tabindex="-1" role="dialog" aria-labelledby="ADRvDBA Settings" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Add Comps Airbnb IDs</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <p>Enter the ID from airbnb url like: <br><i>https://www.airbnb.com/rooms/<b>{copy paste this number}</b></i></p>
+                        <p>You can add multiple IDs, separated by a space.</p>
+                    </div>
+                    <div class="form-row">
+                        <div class="col">
+                            <label for="airbnbIds">Airbnb IDs</label>
+                            <input id="airbnbIds" required type="text" data-role="tagsinput" name="airbnbIds" class="form-control" placeholder="Paste here the Airbnb Id's">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default" onClick="Vector.addAirBnbComps($('input#airbnbIds').tagsinput('items'));">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- jQuery  -->
+<script src="assets/js/popper.min.js"></script><!-- Popper for Bootstrap -->
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/detect.js"></script>
+<script src="assets/js/fastclick.js"></script>
+<script src="assets/js/jquery.slimscroll.js"></script>
+<script src="assets/js/jquery.blockUI.js"></script>
+<script src="assets/js/waves.js"></script>
+<script src="assets/js/wow.min.js"></script>
+<script src="assets/js/jquery.nicescroll.js"></script>
+<script src="assets/js/jquery.scrollTo.min.js"></script>
+
+
+<!-- Required datatable js -->
+<script src="plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="plugins/datatables/dataTables.bootstrap4.min.js"></script>
+<!-- Buttons examples -->
+<script src="plugins/datatables/dataTables.buttons.min.js"></script>
+<script src="plugins/datatables/buttons.bootstrap4.min.js"></script>
+<script src="plugins/datatables/jszip.min.js"></script>
+<script src="plugins/datatables/pdfmake.min.js"></script>
+<script src="plugins/datatables/vfs_fonts.js"></script>
+<script src="plugins/datatables/buttons.html5.min.js"></script>
+<script src="plugins/datatables/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.flash.min.js"></script>
+<!-- Key Tables -->
+<script src="plugins/datatables/dataTables.keyTable.min.js"></script>
+
+<!-- Responsive examples -->
+<script src="plugins/datatables/dataTables.responsive.min.js"></script>
+<script src="plugins/datatables/responsive.bootstrap4.min.js"></script>
+
+
+
+<!-- Chart JS -->
+<script src="plugins/chart.js/Chart.bundle.min.js"></script>
+<script src="js/chart.js"></script>
+
+
+<script src='plugins/fullcalendar/js/fullcalendar.min.js'></script>
+
+<script src="plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+<script src="plugins/bootstrap-tagsinput/js/bootstrap-tagsinput.min.js" type="text/javascript"></script>
+
+<script src="assets/js/jquery.core.js"></script>
+<script src="assets/js/jquery.app.js"></script>
+<script src="js/calls.js"></script>
+<!-- <script src="js/dragdropupload.js"></script> -->
+</body>
+</html>

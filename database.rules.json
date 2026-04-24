@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "calls": {
+      "$callId": {
+        ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'superadmin' || auth.token.role === 'support')",
+        ".write": false
+      }
+    },
+    "transfers": {
+      "$code": {
+        ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'superadmin' || auth.token.role === 'support')",
+        ".write": false
+      }
+    }
+  }
+}

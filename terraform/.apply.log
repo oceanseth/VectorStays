@@ -1,0 +1,584 @@
+[0m[1mdata.archive_file.api: Reading...[0m[0m
+[0m[1mdata.archive_file.api: Read complete after 0s [id=7031af1be9553140835fb135accd261e2c67394d][0m
+[0m[1maws_route53_zone.bnbmesh_com: Refreshing state... [id=Z04972246Z5OHE34J2J4][0m
+[0m[1maws_route53_zone.bnbmesh_ai: Refreshing state... [id=Z09575213DM2E5Q6W5P2O][0m
+[0m[1mdata.aws_caller_identity.current: Reading...[0m[0m
+[0m[1mdata.aws_caller_identity.current: Read complete after 0s [id=218827615080][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+
+Terraform will perform the following actions:
+
+[1m  # aws_acm_certificate.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_acm_certificate" "landing" {
+      [32m+[0m[0m arn                       = (known after apply)
+      [32m+[0m[0m domain_name               = "bnbmesh.ai"
+      [32m+[0m[0m domain_validation_options = [
+          [32m+[0m[0m {
+              [32m+[0m[0m domain_name           = "*.bnbmesh.ai"
+              [32m+[0m[0m resource_record_name  = (known after apply)
+              [32m+[0m[0m resource_record_type  = (known after apply)
+              [32m+[0m[0m resource_record_value = (known after apply)
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m domain_name           = "*.bnbmesh.com"
+              [32m+[0m[0m resource_record_name  = (known after apply)
+              [32m+[0m[0m resource_record_type  = (known after apply)
+              [32m+[0m[0m resource_record_value = (known after apply)
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m domain_name           = "bnbmesh.ai"
+              [32m+[0m[0m resource_record_name  = (known after apply)
+              [32m+[0m[0m resource_record_type  = (known after apply)
+              [32m+[0m[0m resource_record_value = (known after apply)
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m domain_name           = "bnbmesh.com"
+              [32m+[0m[0m resource_record_name  = (known after apply)
+              [32m+[0m[0m resource_record_type  = (known after apply)
+              [32m+[0m[0m resource_record_value = (known after apply)
+            },
+        ]
+      [32m+[0m[0m id                        = (known after apply)
+      [32m+[0m[0m key_algorithm             = (known after apply)
+      [32m+[0m[0m not_after                 = (known after apply)
+      [32m+[0m[0m not_before                = (known after apply)
+      [32m+[0m[0m pending_renewal           = (known after apply)
+      [32m+[0m[0m renewal_eligibility       = (known after apply)
+      [32m+[0m[0m renewal_summary           = (known after apply)
+      [32m+[0m[0m status                    = (known after apply)
+      [32m+[0m[0m subject_alternative_names = [
+          [32m+[0m[0m "*.bnbmesh.ai",
+          [32m+[0m[0m "*.bnbmesh.com",
+          [32m+[0m[0m "bnbmesh.ai",
+          [32m+[0m[0m "bnbmesh.com",
+        ]
+      [32m+[0m[0m tags_all                  = (known after apply)
+      [32m+[0m[0m type                      = (known after apply)
+      [32m+[0m[0m validation_emails         = (known after apply)
+      [32m+[0m[0m validation_method         = "DNS"
+    }
+
+[1m  # aws_acm_certificate_validation.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_acm_certificate_validation" "landing" {
+      [32m+[0m[0m certificate_arn         = (known after apply)
+      [32m+[0m[0m id                      = (known after apply)
+      [32m+[0m[0m validation_record_fqdns = (known after apply)
+    }
+
+[1m  # aws_cloudfront_distribution.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudfront_distribution" "landing" {
+      [32m+[0m[0m aliases                         = [
+          [32m+[0m[0m "bnbmesh.ai",
+          [32m+[0m[0m "bnbmesh.com",
+          [32m+[0m[0m "www.bnbmesh.ai",
+          [32m+[0m[0m "www.bnbmesh.com",
+        ]
+      [32m+[0m[0m arn                             = (known after apply)
+      [32m+[0m[0m caller_reference                = (known after apply)
+      [32m+[0m[0m comment                         = "bnbmesh landing + /api"
+      [32m+[0m[0m continuous_deployment_policy_id = (known after apply)
+      [32m+[0m[0m default_root_object             = "index.html"
+      [32m+[0m[0m domain_name                     = (known after apply)
+      [32m+[0m[0m enabled                         = true
+      [32m+[0m[0m etag                            = (known after apply)
+      [32m+[0m[0m hosted_zone_id                  = (known after apply)
+      [32m+[0m[0m http_version                    = "http2and3"
+      [32m+[0m[0m id                              = (known after apply)
+      [32m+[0m[0m in_progress_validation_batches  = (known after apply)
+      [32m+[0m[0m is_ipv6_enabled                 = true
+      [32m+[0m[0m last_modified_time              = (known after apply)
+      [32m+[0m[0m price_class                     = "PriceClass_100"
+      [32m+[0m[0m retain_on_delete                = false
+      [32m+[0m[0m staging                         = false
+      [32m+[0m[0m status                          = (known after apply)
+      [32m+[0m[0m tags                            = {
+          [32m+[0m[0m "Project" = "bnbmesh"
+        }
+      [32m+[0m[0m tags_all                        = {
+          [32m+[0m[0m "Project" = "bnbmesh"
+        }
+      [32m+[0m[0m trusted_key_groups              = (known after apply)
+      [32m+[0m[0m trusted_signers                 = (known after apply)
+      [32m+[0m[0m wait_for_deployment             = true
+
+      [32m+[0m[0m custom_error_response {
+          [32m+[0m[0m error_code         = 403
+          [32m+[0m[0m response_code      = 200
+          [32m+[0m[0m response_page_path = "/index.html"
+        }
+      [32m+[0m[0m custom_error_response {
+          [32m+[0m[0m error_code         = 404
+          [32m+[0m[0m response_code      = 200
+          [32m+[0m[0m response_page_path = "/index.html"
+        }
+
+      [32m+[0m[0m default_cache_behavior {
+          [32m+[0m[0m allowed_methods        = [
+              [32m+[0m[0m "GET",
+              [32m+[0m[0m "HEAD",
+              [32m+[0m[0m "OPTIONS",
+            ]
+          [32m+[0m[0m cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+          [32m+[0m[0m cached_methods         = [
+              [32m+[0m[0m "GET",
+              [32m+[0m[0m "HEAD",
+            ]
+          [32m+[0m[0m compress               = true
+          [32m+[0m[0m default_ttl            = (known after apply)
+          [32m+[0m[0m max_ttl                = (known after apply)
+          [32m+[0m[0m min_ttl                = 0
+          [32m+[0m[0m target_origin_id       = "landing-s3"
+          [32m+[0m[0m trusted_key_groups     = (known after apply)
+          [32m+[0m[0m trusted_signers        = (known after apply)
+          [32m+[0m[0m viewer_protocol_policy = "redirect-to-https"
+        }
+
+      [32m+[0m[0m ordered_cache_behavior {
+          [32m+[0m[0m allowed_methods          = [
+              [32m+[0m[0m "DELETE",
+              [32m+[0m[0m "GET",
+              [32m+[0m[0m "HEAD",
+              [32m+[0m[0m "OPTIONS",
+              [32m+[0m[0m "PATCH",
+              [32m+[0m[0m "POST",
+              [32m+[0m[0m "PUT",
+            ]
+          [32m+[0m[0m cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+          [32m+[0m[0m cached_methods           = [
+              [32m+[0m[0m "GET",
+              [32m+[0m[0m "HEAD",
+            ]
+          [32m+[0m[0m compress                 = true
+          [32m+[0m[0m default_ttl              = (known after apply)
+          [32m+[0m[0m max_ttl                  = (known after apply)
+          [32m+[0m[0m min_ttl                  = 0
+          [32m+[0m[0m origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+          [32m+[0m[0m path_pattern             = "/api/*"
+          [32m+[0m[0m target_origin_id         = "landing-api"
+          [32m+[0m[0m viewer_protocol_policy   = "redirect-to-https"
+        }
+
+      [32m+[0m[0m origin {
+          [32m+[0m[0m connection_attempts = 3
+          [32m+[0m[0m connection_timeout  = 10
+          [32m+[0m[0m domain_name         = (known after apply)
+          [32m+[0m[0m origin_id           = "landing-api"
+
+          [32m+[0m[0m custom_origin_config {
+              [32m+[0m[0m http_port                = 80
+              [32m+[0m[0m https_port               = 443
+              [32m+[0m[0m origin_keepalive_timeout = 5
+              [32m+[0m[0m origin_protocol_policy   = "https-only"
+              [32m+[0m[0m origin_read_timeout      = 30
+              [32m+[0m[0m origin_ssl_protocols     = [
+                  [32m+[0m[0m "TLSv1.2",
+                ]
+            }
+        }
+      [32m+[0m[0m origin {
+          [32m+[0m[0m connection_attempts      = 3
+          [32m+[0m[0m connection_timeout       = 10
+          [32m+[0m[0m domain_name              = (known after apply)
+          [32m+[0m[0m origin_access_control_id = (known after apply)
+          [32m+[0m[0m origin_id                = "landing-s3"
+        }
+
+      [32m+[0m[0m restrictions {
+          [32m+[0m[0m geo_restriction {
+              [32m+[0m[0m locations        = (known after apply)
+              [32m+[0m[0m restriction_type = "none"
+            }
+        }
+
+      [32m+[0m[0m viewer_certificate {
+          [32m+[0m[0m acm_certificate_arn      = (known after apply)
+          [32m+[0m[0m minimum_protocol_version = "TLSv1.2_2021"
+          [32m+[0m[0m ssl_support_method       = "sni-only"
+        }
+    }
+
+[1m  # aws_cloudfront_origin_access_control.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudfront_origin_access_control" "landing" {
+      [32m+[0m[0m arn                               = (known after apply)
+      [32m+[0m[0m description                       = "Managed by Terraform"
+      [32m+[0m[0m etag                              = (known after apply)
+      [32m+[0m[0m id                                = (known after apply)
+      [32m+[0m[0m name                              = "bnbmesh-landing-oac"
+      [32m+[0m[0m origin_access_control_origin_type = "s3"
+      [32m+[0m[0m signing_behavior                  = "always"
+      [32m+[0m[0m signing_protocol                  = "sigv4"
+    }
+
+[1m  # aws_iam_role.api[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "api" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "lambda.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "bnbmesh-api"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+    }
+
+[1m  # aws_iam_role_policy_attachment.api_logs[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "api_logs" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      [32m+[0m[0m role       = "bnbmesh-api"
+    }
+
+[1m  # aws_lambda_function.api[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_function" "api" {
+      [32m+[0m[0m architectures                  = (known after apply)
+      [32m+[0m[0m arn                            = (known after apply)
+      [32m+[0m[0m code_sha256                    = (known after apply)
+      [32m+[0m[0m filename                       = "./.build/api.zip"
+      [32m+[0m[0m function_name                  = "bnbmesh-api"
+      [32m+[0m[0m handler                        = "src/index.handler"
+      [32m+[0m[0m id                             = (known after apply)
+      [32m+[0m[0m invoke_arn                     = (known after apply)
+      [32m+[0m[0m last_modified                  = (known after apply)
+      [32m+[0m[0m memory_size                    = 256
+      [32m+[0m[0m package_type                   = "Zip"
+      [32m+[0m[0m publish                        = false
+      [32m+[0m[0m qualified_arn                  = (known after apply)
+      [32m+[0m[0m qualified_invoke_arn           = (known after apply)
+      [32m+[0m[0m reserved_concurrent_executions = -1
+      [32m+[0m[0m role                           = (known after apply)
+      [32m+[0m[0m runtime                        = "nodejs22.x"
+      [32m+[0m[0m signing_job_arn                = (known after apply)
+      [32m+[0m[0m signing_profile_version_arn    = (known after apply)
+      [32m+[0m[0m skip_destroy                   = false
+      [32m+[0m[0m source_code_hash               = "OhOvNPc1kaNCnQaSeBZ7zPpgvMev/fGINCM08QWUfxc="
+      [32m+[0m[0m source_code_size               = (known after apply)
+      [32m+[0m[0m tags                           = {
+          [32m+[0m[0m "Project" = "bnbmesh"
+        }
+      [32m+[0m[0m tags_all                       = {
+          [32m+[0m[0m "Project" = "bnbmesh"
+        }
+      [32m+[0m[0m timeout                        = 15
+      [32m+[0m[0m version                        = (known after apply)
+
+      [32m+[0m[0m environment {
+          [32m+[0m[0m variables = {
+              [32m+[0m[0m "NODE_OPTIONS" = "--enable-source-maps"
+            }
+        }
+    }
+
+[1m  # aws_lambda_function_url.api[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_function_url" "api" {
+      [32m+[0m[0m authorization_type = "NONE"
+      [32m+[0m[0m function_arn       = (known after apply)
+      [32m+[0m[0m function_name      = "bnbmesh-api"
+      [32m+[0m[0m function_url       = (known after apply)
+      [32m+[0m[0m id                 = (known after apply)
+      [32m+[0m[0m invoke_mode        = "BUFFERED"
+      [32m+[0m[0m url_id             = (known after apply)
+    }
+
+[1m  # aws_route53_record.ai_apex[0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "ai_apex" {
+      [32m+[0m[0m allow_overwrite = (known after apply)
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = "bnbmesh.ai"
+      [32m+[0m[0m type            = "A"
+      [32m+[0m[0m zone_id         = "Z09575213DM2E5Q6W5P2O"
+
+      [32m+[0m[0m alias {
+          [32m+[0m[0m evaluate_target_health = false
+          [32m+[0m[0m name                   = (known after apply)
+          [32m+[0m[0m zone_id                = (known after apply)
+        }
+    }
+
+[1m  # aws_route53_record.ai_www[0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "ai_www" {
+      [32m+[0m[0m allow_overwrite = (known after apply)
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = "www.bnbmesh.ai"
+      [32m+[0m[0m type            = "A"
+      [32m+[0m[0m zone_id         = "Z09575213DM2E5Q6W5P2O"
+
+      [32m+[0m[0m alias {
+          [32m+[0m[0m evaluate_target_health = false
+          [32m+[0m[0m name                   = (known after apply)
+          [32m+[0m[0m zone_id                = (known after apply)
+        }
+    }
+
+[1m  # aws_route53_record.cert_validation["*.bnbmesh.ai"][0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "cert_validation" {
+      [32m+[0m[0m allow_overwrite = true
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = (known after apply)
+      [32m+[0m[0m records         = (known after apply)
+      [32m+[0m[0m ttl             = 60
+      [32m+[0m[0m type            = (known after apply)
+      [32m+[0m[0m zone_id         = "Z09575213DM2E5Q6W5P2O"
+    }
+
+[1m  # aws_route53_record.cert_validation["*.bnbmesh.com"][0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "cert_validation" {
+      [32m+[0m[0m allow_overwrite = true
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = (known after apply)
+      [32m+[0m[0m records         = (known after apply)
+      [32m+[0m[0m ttl             = 60
+      [32m+[0m[0m type            = (known after apply)
+      [32m+[0m[0m zone_id         = "Z04972246Z5OHE34J2J4"
+    }
+
+[1m  # aws_route53_record.cert_validation["bnbmesh.ai"][0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "cert_validation" {
+      [32m+[0m[0m allow_overwrite = true
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = (known after apply)
+      [32m+[0m[0m records         = (known after apply)
+      [32m+[0m[0m ttl             = 60
+      [32m+[0m[0m type            = (known after apply)
+      [32m+[0m[0m zone_id         = "Z09575213DM2E5Q6W5P2O"
+    }
+
+[1m  # aws_route53_record.cert_validation["bnbmesh.com"][0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "cert_validation" {
+      [32m+[0m[0m allow_overwrite = true
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = (known after apply)
+      [32m+[0m[0m records         = (known after apply)
+      [32m+[0m[0m ttl             = 60
+      [32m+[0m[0m type            = (known after apply)
+      [32m+[0m[0m zone_id         = "Z04972246Z5OHE34J2J4"
+    }
+
+[1m  # aws_route53_record.com_apex[0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "com_apex" {
+      [32m+[0m[0m allow_overwrite = (known after apply)
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = "bnbmesh.com"
+      [32m+[0m[0m type            = "A"
+      [32m+[0m[0m zone_id         = "Z04972246Z5OHE34J2J4"
+
+      [32m+[0m[0m alias {
+          [32m+[0m[0m evaluate_target_health = false
+          [32m+[0m[0m name                   = (known after apply)
+          [32m+[0m[0m zone_id                = (known after apply)
+        }
+    }
+
+[1m  # aws_route53_record.com_www[0m will be created
+[0m  [32m+[0m[0m resource "aws_route53_record" "com_www" {
+      [32m+[0m[0m allow_overwrite = (known after apply)
+      [32m+[0m[0m fqdn            = (known after apply)
+      [32m+[0m[0m id              = (known after apply)
+      [32m+[0m[0m name            = "www.bnbmesh.com"
+      [32m+[0m[0m type            = "A"
+      [32m+[0m[0m zone_id         = "Z04972246Z5OHE34J2J4"
+
+      [32m+[0m[0m alias {
+          [32m+[0m[0m evaluate_target_health = false
+          [32m+[0m[0m name                   = (known after apply)
+          [32m+[0m[0m zone_id                = (known after apply)
+        }
+    }
+
+[1m  # aws_s3_bucket.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket" "landing" {
+      [32m+[0m[0m acceleration_status         = (known after apply)
+      [32m+[0m[0m acl                         = (known after apply)
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m bucket                      = "bnbmesh-landing-218827615080"
+      [32m+[0m[0m bucket_domain_name          = (known after apply)
+      [32m+[0m[0m bucket_prefix               = (known after apply)
+      [32m+[0m[0m bucket_regional_domain_name = (known after apply)
+      [32m+[0m[0m force_destroy               = true
+      [32m+[0m[0m hosted_zone_id              = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m object_lock_enabled         = (known after apply)
+      [32m+[0m[0m policy                      = (known after apply)
+      [32m+[0m[0m region                      = (known after apply)
+      [32m+[0m[0m request_payer               = (known after apply)
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Env"     = "prod"
+          [32m+[0m[0m "Project" = "bnbmesh"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Env"     = "prod"
+          [32m+[0m[0m "Project" = "bnbmesh"
+        }
+      [32m+[0m[0m website_domain              = (known after apply)
+      [32m+[0m[0m website_endpoint            = (known after apply)
+    }
+
+[1m  # aws_s3_bucket_policy.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_policy" "landing" {
+      [32m+[0m[0m bucket = (known after apply)
+      [32m+[0m[0m id     = (known after apply)
+      [32m+[0m[0m policy = (known after apply)
+    }
+
+[1m  # aws_s3_bucket_public_access_block.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_public_access_block" "landing" {
+      [32m+[0m[0m block_public_acls       = true
+      [32m+[0m[0m block_public_policy     = true
+      [32m+[0m[0m bucket                  = (known after apply)
+      [32m+[0m[0m id                      = (known after apply)
+      [32m+[0m[0m ignore_public_acls      = true
+      [32m+[0m[0m restrict_public_buckets = true
+    }
+
+[1m  # aws_s3_bucket_versioning.landing[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_versioning" "landing" {
+      [32m+[0m[0m bucket = (known after apply)
+      [32m+[0m[0m id     = (known after apply)
+
+      [32m+[0m[0m versioning_configuration {
+          [32m+[0m[0m mfa_delete = (known after apply)
+          [32m+[0m[0m status     = "Enabled"
+        }
+    }
+
+[1mPlan:[0m 20 to add, 0 to change, 0 to destroy.
+[0m
+Changes to Outputs:
+  [32m+[0m[0m api_lambda_function_url    = (known after apply)
+  [32m+[0m[0m cloudfront_distribution_id = (known after apply)
+  [32m+[0m[0m cloudfront_domain          = (known after apply)
+  [32m+[0m[0m landing_bucket             = "bnbmesh-landing-218827615080"
+[0m[1maws_cloudfront_origin_access_control.landing: Creating...[0m[0m
+[0m[1maws_iam_role.api: Creating...[0m[0m
+[0m[1maws_acm_certificate.landing: Creating...[0m[0m
+[0m[1maws_s3_bucket.landing: Creating...[0m[0m
+[0m[1maws_cloudfront_origin_access_control.landing: Creation complete after 1s [id=E1FV0W8JZD68KE][0m
+[0m[1maws_iam_role.api: Creation complete after 1s [id=bnbmesh-api][0m
+[0m[1maws_iam_role_policy_attachment.api_logs: Creating...[0m[0m
+[0m[1maws_lambda_function.api: Creating...[0m[0m
+[0m[1maws_iam_role_policy_attachment.api_logs: Creation complete after 0s [id=bnbmesh-api-20260424210639212400000002][0m
+[0m[1maws_s3_bucket.landing: Creation complete after 3s [id=bnbmesh-landing-218827615080][0m
+[0m[1maws_s3_bucket_public_access_block.landing: Creating...[0m[0m
+[0m[1maws_s3_bucket_versioning.landing: Creating...[0m[0m
+[0m[1maws_s3_bucket_public_access_block.landing: Creation complete after 1s [id=bnbmesh-landing-218827615080][0m
+[0m[1maws_s3_bucket_versioning.landing: Creation complete after 2s [id=bnbmesh-landing-218827615080][0m
+[0m[1maws_acm_certificate.landing: Creation complete after 10s [id=arn:aws:acm:us-east-1:218827615080:certificate/186e6a7f-d839-4096-b2c6-00ac5e9b29ef][0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.ai"]: Creating...[0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.com"]: Creating...[0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.com"]: Creating...[0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.ai"]: Creating...[0m[0m
+[0m[1maws_lambda_function.api: Still creating... [10s elapsed][0m[0m
+[0m[1maws_lambda_function.api: Creation complete after 15s [id=bnbmesh-api][0m
+[0m[1maws_lambda_function_url.api: Creating...[0m[0m
+[0m[1maws_lambda_function_url.api: Creation complete after 1s [id=bnbmesh-api][0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.com"]: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.ai"]: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.ai"]: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.com"]: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.com"]: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.ai"]: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.ai"]: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.com"]: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.ai"]: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.com"]: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.com"]: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.ai"]: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.com"]: Creation complete after 31s [id=Z04972246Z5OHE34J2J4__190c33da1eea5a00b3322105e2bb781e.bnbmesh.com._CNAME][0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.ai"]: Creation complete after 31s [id=Z09575213DM2E5Q6W5P2O__844a767796418b455ab96a0304751bb3.bnbmesh.ai._CNAME][0m
+[0m[1maws_route53_record.cert_validation["*.bnbmesh.com"]: Creation complete after 31s [id=Z04972246Z5OHE34J2J4__190c33da1eea5a00b3322105e2bb781e.bnbmesh.com._CNAME][0m
+[0m[1maws_route53_record.cert_validation["bnbmesh.ai"]: Creation complete after 32s [id=Z09575213DM2E5Q6W5P2O__844a767796418b455ab96a0304751bb3.bnbmesh.ai._CNAME][0m
+[0m[1maws_acm_certificate_validation.landing: Creating...[0m[0m
+[0m[1maws_acm_certificate_validation.landing: Creation complete after 1s [id=2026-04-24 21:07:02.21 +0000 UTC][0m
+[0m[1maws_cloudfront_distribution.landing: Creating...[0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [10s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [20s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [30s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [40s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [50s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [1m0s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [1m10s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [1m20s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [1m30s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [1m40s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [1m50s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [2m0s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [2m10s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [2m20s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [2m30s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [2m40s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [2m50s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [3m0s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [3m10s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Still creating... [3m20s elapsed][0m[0m
+[0m[1maws_cloudfront_distribution.landing: Creation complete after 3m27s [id=EC4TEVK7VTQKV][0m
+[0m[1maws_s3_bucket_policy.landing: Creating...[0m[0m
+[0m[1maws_route53_record.ai_apex: Creating...[0m[0m
+[0m[1maws_route53_record.com_www: Creating...[0m[0m
+[0m[1maws_route53_record.ai_www: Creating...[0m[0m
+[0m[1maws_route53_record.com_apex: Creating...[0m[0m
+[0m[1maws_s3_bucket_policy.landing: Creation complete after 0s [id=bnbmesh-landing-218827615080][0m
+[0m[1maws_route53_record.ai_apex: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.com_www: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.com_apex: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.ai_www: Still creating... [10s elapsed][0m[0m
+[0m[1maws_route53_record.ai_www: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.com_apex: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.ai_apex: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.com_www: Still creating... [20s elapsed][0m[0m
+[0m[1maws_route53_record.com_www: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.ai_apex: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.com_apex: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.ai_www: Still creating... [30s elapsed][0m[0m
+[0m[1maws_route53_record.com_www: Creation complete after 31s [id=Z04972246Z5OHE34J2J4_www.bnbmesh.com_A][0m
+[0m[1maws_route53_record.ai_apex: Creation complete after 31s [id=Z09575213DM2E5Q6W5P2O_bnbmesh.ai_A][0m
+[0m[1maws_route53_record.com_apex: Creation complete after 31s [id=Z04972246Z5OHE34J2J4_bnbmesh.com_A][0m
+[0m[1maws_route53_record.ai_www: Creation complete after 31s [id=Z09575213DM2E5Q6W5P2O_www.bnbmesh.ai_A][0m
+[0m[1m[32m
+Apply complete! Resources: 20 added, 0 changed, 0 destroyed.
+[0m[0m[1m[32m
+Outputs:
+
+[0mapi_lambda_function_url = "https://bgd5zg3bqoc2tvk34ilka6gjie0jtdgb.lambda-url.us-east-1.on.aws/"
+bnbmesh_ai_nameservers = tolist([
+  "ns-1241.awsdns-27.org",
+  "ns-1804.awsdns-33.co.uk",
+  "ns-342.awsdns-42.com",
+  "ns-774.awsdns-32.net",
+])
+bnbmesh_ai_zone_id = "Z09575213DM2E5Q6W5P2O"
+bnbmesh_com_nameservers = tolist([
+  "ns-1123.awsdns-12.org",
+  "ns-1604.awsdns-08.co.uk",
+  "ns-423.awsdns-52.com",
+  "ns-613.awsdns-12.net",
+])
+bnbmesh_com_zone_id = "Z04972246Z5OHE34J2J4"
+cloudfront_distribution_id = "EC4TEVK7VTQKV"
+cloudfront_domain = "d2dqwp1j2ngti6.cloudfront.net"
+landing_bucket = "bnbmesh-landing-218827615080"

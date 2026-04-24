@@ -1,0 +1,47 @@
+
+# Server-side secrets (Firebase service accounts, private keys, etc.)
+/tools/secrets/
+/tools/config.php
+/tools/qa_config.php
+/tools/vector_config.php
+/tools/revestment_config.php
+/tools/vector_config.json
+/tools/revestment_config.json
+/tools/setupProperlyWebhook.js
+/tools/testGetReservation.php
+/docker/php-fpm/insecure_id_rsa
+/docker/php-fpm/insecure_id_rsa.pub
+
+# Node / build outputs
+node_modules/
+**/node_modules/
+dist/
+.cache/
+.parcel-cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Vite local
+landing/dist/
+
+# Lambda zip output
+terraform/.build/
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf

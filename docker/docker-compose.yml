@@ -1,0 +1,41 @@
+# docker-compose build
+# docker-compose up
+# add the following line to /etc/hosts
+# 127.0.0.1 qa.stayintel.com
+# open in browser http://qa.stayintel.com
+# make sure you copy the namastay database
+version: "3.2"
+services:
+    nginx:
+        image: nginx:alpine
+        ports:
+          - "80:80"
+        volumes:
+          - ./nginx:/etc/nginx/conf.d
+          - ../:/stayintel
+        environment:
+          - NGINX_HOST=qa.stayintel.com
+          - NGINX_PORT=80
+        links:
+          - php-fpm
+    php-fpm:
+        build: php-fpm
+        working_dir: /stayintel
+        ports:
+          - "2222:22"
+        volumes:
+          - ../:/stayintel
+        links:
+          - mysql
+    mysql:
+        build: mysql
+        volumes:
+          - "./mysql/my.cnf:/etc/mysql/my.cnf:delegated"
+          - "./mysql/logs:/var/logs/mysql"
+          - "./mysql/files:/var/lib/mysql-files"
+        ports:
+          - "3306:3306"
+        environment:
+          MYSQL_ROOT_PASSWORD: "stayintel"
+        security_opt:
+          - seccomp:unconfined

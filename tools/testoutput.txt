@@ -1,0 +1,3050 @@
+
+stdClass Object
+(
+    [_id] => 613bb1e4585f0b002dedcc5b
+    [integration] => stdClass Object
+        (
+            [limitations] => stdClass Object
+                (
+                    [availableStatuses] => Array
+                        (
+                            [0] => checked_in
+                            [1] => checked_out
+                            [2] => canceled
+                        )
+
+                )
+
+            [bookingCom] => stdClass Object
+                (
+                    [invalidCreditCards] => Array
+                        (
+                        )
+
+                    [reports] => Array
+                        (
+                        )
+
+                )
+
+            [_id] => 5b122499911366001f002434
+            [platform] => manual
+        )
+
+    [review] => stdClass Object
+        (
+            [shouldReview] => 1
+        )
+
+    [manuallyCreated] => 
+    [listingId] => 60302b07f37de300310fdbdc
+    [checkInDateLocalized] => 2021-09-22
+    [checkOutDateLocalized] => 2021-09-24
+    [guestsCount] => 2
+    [source] => website
+    [accountId] => 5aa56377bba7740015eaab13
+    [status] => confirmed
+    [guestId] => 613bb1e1585f0b002dedcb97
+    [money] => stdClass Object
+        (
+            [coupon] => stdClass Object
+                (
+                    [code] => UNBLENDED25
+                    [discountValue] => 25
+                    [description] => Coffee in units
+                    [valueSaved] => 46
+                )
+
+            [channelCommissionRules] => stdClass Object
+                (
+                    [isPreDeduct] => 
+                    [_id] => 5eb06c9742c158002dbf4ca1
+                    [source] => website
+                    [tax] => 0
+                    [commission] => stdClass Object
+                        (
+                            [value] => 3.3
+                            [of] => Array
+                                (
+                                    [0] => fareAccommodationAdjusted
+                                    [1] => fareCleaning
+                                )
+
+                        )
+
+                )
+
+            [altered] => 1
+            [invoiceItems] => Array
+                (
+                    [0] => stdClass Object
+                        (
+                            [_id] => 613bb1e4585f0b002dedcc5f
+                            [title] => Accommodation fare
+                            [amount] => 185
+                            [currency] => USD
+                            [type] => ACCOMMODATION_FARE
+                            [isLocked] => 1
+                            [normalType] => AF
+                        )
+
+                    [1] => stdClass Object
+                        (
+                            [_id] => 613bb1e4585f0b002dedcc5e
+                            [title] => Cleaning fee
+                            [amount] => 105
+                            [currency] => USD
+                            [type] => CLEANING_FEE
+                            [isLocked] => 1
+                            [normalType] => CF
+                        )
+
+                    [2] => stdClass Object
+                        (
+                            [_id] => 613bb1e4585f0b002dedcc5d
+                            [title] => UNBLENDED25 (25% OFF)
+                            [description] => Coffee in units
+                            [amount] => -46
+                            [currency] => USD
+                            [isLocked] => 1
+                            [normalType] => CO
+                            [type] => DISCOUNT
+                        )
+
+                    [3] => stdClass Object
+                        (
+                            [_id] => 613bb1e4585f0b002dedcc5c
+                            [title] => Reservation Fee
+                            [currency] => USD
+                            [isLocked] => 1
+                            [isAutoAdditionalFee] => 1
+                            [type] => ADDITIONAL
+                            [normalType] => AFE
+                            [secondIdentifier] => RESORT
+                            [amount] => 15
+                        )
+
+                    [4] => stdClass Object
+                        (
+                            [_id] => 614c47acfa92090031b2ad29
+                            [logs] => stdClass Object
+                                (
+                                    [createdBy] => Nelly Dimaano
+                                    [createdAt] => 2021-09-23T09:23:56.701Z
+                                )
+
+                            [title] => Stripe Fee
+                            [amount] => 0.11
+                            [description] => Stripe Fee Adjustment
+                            [currency] => USD
+                            [type] => MANUAL
+                            [normalType] => AFE
+                            [secondIdentifier] => CREDIT_CARD_PROCESSING_FEE
+                        )
+
+                )
+
+            [payments] => Array
+                (
+                    [0] => stdClass Object
+                        (
+                            [paymentMethodStatus] => ACTIVE
+                            [isAuthorizationHold] => 
+                            [status] => SUCCEEDED
+                            [_id] => 613bb1e4585f0b002dedcc60
+                            [refunds] => Array
+                                (
+                                )
+
+                            [authorizationHoldCaptures] => Array
+                                (
+                                )
+
+                            [createdAt] => 2021-09-10T19:28:36.106Z
+                            [attempts] => Array
+                                (
+                                    [0] => stdClass Object
+                                        (
+                                            [_id] => 613bbb37bcca09002a1c1f8a
+                                            [createdAt] => 2021-09-10T20:08:23.743Z
+                                            [status] => SUCCEEDED
+                                            [payload] => stdClass Object
+                                                (
+                                                    [id] => pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                    [object] => payment_intent
+                                                    [amount] => 25900
+                                                    [amount_capturable] => 0
+                                                    [amount_received] => 25900
+                                                    [application] => ca_7S8pmecTuFQO5zrKlQiQXAwhqKNNTNy7
+                                                    [application_fee_amount] => 78
+                                                    [canceled_at] => 
+                                                    [cancellation_reason] => 
+                                                    [capture_method] => automatic
+                                                    [charges] => stdClass Object
+                                                        (
+                                                            [object] => list
+                                                            [data] => Array
+                                                                (
+                                                                    [0] => stdClass Object
+                                                                        (
+                                                                            [id] => ch_3JYG1KGZjqSyOIVc0bbAObPl
+                                                                            [object] => charge
+                                                                            [amount] => 25900
+                                                                            [amount_captured] => 25900
+                                                                            [amount_refunded] => 0
+                                                                            [application] => ca_7S8pmecTuFQO5zrKlQiQXAwhqKNNTNy7
+                                                                            [application_fee] => fee_1JYG1LGZjqSyOIVcI99TWQ8P
+                                                                            [application_fee_amount] => 78
+                                                                            [balance_transaction] => txn_3JYG1KGZjqSyOIVc07t7f75A
+                                                                            [billing_details] => stdClass Object
+                                                                                (
+                                                                                    [address] => stdClass Object
+                                                                                        (
+                                                                                            [city] => 
+                                                                                            [country] => 
+                                                                                            [line1] => 
+                                                                                            [line2] => 
+                                                                                            [postal_code] => 
+                                                                                            [state] => 
+                                                                                        )
+
+                                                                                    [email] => 
+                                                                                    [name] => Lucas Cuadros
+                                                                                    [phone] => 
+                                                                                )
+
+                                                                            [calculated_statement_descriptor] => VECTOR TRAVEL  BOOKING
+                                                                            [captured] => 1
+                                                                            [created] => 1631304502
+                                                                            [currency] => usd
+                                                                            [customer] => cus_KCeiMtp7fHDe02
+                                                                            [description] => x6nKMpDlz
+                                                                            [destination] => 
+                                                                            [dispute] => 
+                                                                            [disputed] => 
+                                                                            [failure_code] => 
+                                                                            [failure_message] => 
+                                                                            [invoice] => 
+                                                                            [livemode] => 1
+                                                                            [metadata] => stdClass Object
+                                                                                (
+                                                                                    [accountId] => 5aa56377bba7740015eaab13
+                                                                                    [confirmationCode] => x6nKMpDlz
+                                                                                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                                                                                    [OTA] => website
+                                                                                    [listingId] => 60302b07f37de300310fdbdc
+                                                                                    [guestName] => SOFIA CUADROS
+                                                                                )
+
+                                                                            [on_behalf_of] => 
+                                                                            [order] => 
+                                                                            [outcome] => stdClass Object
+                                                                                (
+                                                                                    [network_status] => approved_by_network
+                                                                                    [reason] => 
+                                                                                    [risk_level] => normal
+                                                                                    [risk_score] => 3
+                                                                                    [seller_message] => Payment complete.
+                                                                                    [type] => authorized
+                                                                                )
+
+                                                                            [paid] => 1
+                                                                            [payment_intent] => pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                                            [payment_method] => pm_1JYFOkGZjqSyOIVcpy2UFXfB
+                                                                            [payment_method_details] => stdClass Object
+                                                                                (
+                                                                                    [card] => stdClass Object
+                                                                                        (
+                                                                                            [brand] => visa
+                                                                                            [checks] => stdClass Object
+                                                                                                (
+                                                                                                    [address_line1_check] => 
+                                                                                                    [address_postal_code_check] => 
+                                                                                                    [cvc_check] => 
+                                                                                                )
+
+                                                                                            [country] => US
+                                                                                            [ds_transaction_id] => 
+                                                                                            [exp_month] => 3
+                                                                                            [exp_year] => 2023
+                                                                                            [fingerprint] => YUlou6wWsL7bZ0MO
+                                                                                            [funding] => debit
+                                                                                            [installments] => 
+                                                                                            [last4] => 7496
+                                                                                            [moto] => 
+                                                                                            [network] => visa
+                                                                                            [three_d_secure] => 
+                                                                                            [wallet] => 
+                                                                                        )
+
+                                                                                    [type] => card
+                                                                                )
+
+                                                                            [receipt_email] => 
+                                                                            [receipt_number] => 
+                                                                            [receipt_url] => https://pay.stripe.com/receipts/acct_1CN7jLGZjqSyOIVc/ch_3JYG1KGZjqSyOIVc0bbAObPl/rcpt_KCfM0Qiw7LA6T6urufgzAvZ9Y8yOowI
+                                                                            [refunded] => 
+                                                                            [refunds] => stdClass Object
+                                                                                (
+                                                                                    [object] => list
+                                                                                    [data] => Array
+                                                                                        (
+                                                                                        )
+
+                                                                                    [has_more] => 
+                                                                                    [total_count] => 0
+                                                                                    [url] => /v1/charges/ch_3JYG1KGZjqSyOIVc0bbAObPl/refunds
+                                                                                )
+
+                                                                            [review] => 
+                                                                            [shipping] => 
+                                                                            [source] => 
+                                                                            [source_transfer] => 
+                                                                            [statement_descriptor] => Vector Travel  booking
+                                                                            [statement_descriptor_suffix] => 
+                                                                            [status] => succeeded
+                                                                            [transfer_data] => 
+                                                                            [transfer_group] => 
+                                                                        )
+
+                                                                )
+
+                                                            [has_more] => 
+                                                            [total_count] => 1
+                                                            [url] => /v1/charges?payment_intent=pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                        )
+
+                                                    [client_secret] => pi_3JYG1KGZjqSyOIVc0y5J45SY_secret_9kZwQruHbtHfFzIg9iCnsYzxY
+                                                    [confirmation_method] => manual
+                                                    [created] => 1631304502
+                                                    [currency] => usd
+                                                    [customer] => cus_KCeiMtp7fHDe02
+                                                    [description] => x6nKMpDlz
+                                                    [invoice] => 
+                                                    [last_payment_error] => 
+                                                    [livemode] => 1
+                                                    [metadata] => stdClass Object
+                                                        (
+                                                            [accountId] => 5aa56377bba7740015eaab13
+                                                            [confirmationCode] => x6nKMpDlz
+                                                            [reservationId] => 613bb1e4585f0b002dedcc5b
+                                                            [OTA] => website
+                                                            [listingId] => 60302b07f37de300310fdbdc
+                                                            [guestName] => SOFIA CUADROS
+                                                        )
+
+                                                    [next_action] => 
+                                                    [on_behalf_of] => 
+                                                    [payment_method] => pm_1JYFOkGZjqSyOIVcpy2UFXfB
+                                                    [payment_method_options] => stdClass Object
+                                                        (
+                                                            [card] => stdClass Object
+                                                                (
+                                                                    [installments] => 
+                                                                    [network] => 
+                                                                    [request_three_d_secure] => automatic
+                                                                )
+
+                                                        )
+
+                                                    [payment_method_types] => Array
+                                                        (
+                                                            [0] => card
+                                                        )
+
+                                                    [receipt_email] => 
+                                                    [review] => 
+                                                    [setup_future_usage] => 
+                                                    [shipping] => 
+                                                    [source] => 
+                                                    [statement_descriptor] => Vector Travel  booking
+                                                    [statement_descriptor_suffix] => 
+                                                    [status] => succeeded
+                                                    [transfer_data] => 
+                                                    [transfer_group] => 
+                                                )
+
+                                        )
+
+                                )
+
+                            [receiptTargets] => Array
+                                (
+                                )
+
+                            [policyItemId] => 60302b5f47363a00306eb4a1
+                            [shouldBePaidAt] => 2021-09-10T19:28:35.931Z
+                            [currency] => USD
+                            [amount] => 259
+                            [paymentMethodId] => 613bb1e3585f0b002dedcc17
+                            [paidAt] => 2021-09-10T20:08:23.742Z
+                            [confirmationCode] => pi_3JYG1KGZjqSyOIVc0y5J45SY
+                            [receiptId] => 20256182
+                            [guestId] => 613bb1e1585f0b002dedcb97
+                        )
+
+                )
+
+            [autoPaymentsPolicy] => Array
+                (
+                    [0] => stdClass Object
+                        (
+                            [scheduleTo] => stdClass Object
+                                (
+                                    [timeRelation] => stdClass Object
+                                        (
+                                            [relation] => AT
+                                            [unit] => HOURS
+                                            [amount] => 1
+                                        )
+
+                                    [reservationEvent] => CONFIRMATION
+                                )
+
+                            [_id] => 60302b5f47363a00306eb4a1
+                            [chargeType] => PERCENTAGE
+                            [amount] => 100
+                            [useGuestCard] => 1
+                        )
+
+                )
+
+            [fareAccommodation] => 185
+            [paymentProviderIds] => Array
+                (
+                    [0] => 5fcdeda77127c2002caa87d9
+                )
+
+            [fareAccommodationAdjustment] => 0
+            [fareAccommodationDiscount] => 0
+            [currency] => USD
+            [fareAccommodationAdjusted] => 139
+            [fareCleaning] => 105
+            [hostServiceFee] => 8.05
+            [hostServiceFeeTax] => 0
+            [hostServiceFeeIncTax] => 0
+            [subTotalPrice] => 259.11
+            [hostPayout] => 259.11
+            [hostPayoutUsd] => 259.11
+            [totalTaxes] => 0
+            [totalRefunded] => 0
+            [totalPaid] => 259
+            [paymentsDue] => 0
+            [balanceDue] => 0.11
+            [isFullyPaid] => 
+            [useAccountRevenueShare] => 1
+            [netIncomeFormula] => host_payout - channel_commission + host_channel_fee
+            [netIncome] => 251.06
+            [commissionFormula] => net_income
+            [commission] => 251.06
+            [commissionTaxPercentage] => 0
+            [commissionTax] => 0
+            [commissionIncTax] => 251.06
+            [ownerRevenueFormula] => net_income - pm_commission
+            [ownerRevenue] => 0
+            [currencyConversionRateToAccount] => 1
+        )
+
+    [confirmationCode] => x6nKMpDlz
+    [isReturningGuest] => 
+    [checkIn] => 2021-09-22T23:00:00.000Z
+    [checkOut] => 2021-09-24T18:00:00.000Z
+    [nightsCount] => 2
+    [confirmedAt] => 2021-09-10T19:28:35.931Z
+    [createdAt] => 2021-09-10T19:28:36.110Z
+    [pendingTasks] => Array
+        (
+        )
+
+    [customFields] => Array
+        (
+            [0] => stdClass Object
+                (
+                    [_id] => 61476730d83c93002c661f4f
+                    [fieldId] => 5dba1ece3998d4002264b9c5
+                    [value] => orange
+                )
+
+            [1] => stdClass Object
+                (
+                    [_id] => 61476730d83c93002c661f4e
+                    [fieldId] => 5dba1ece3998d4002264b9c4
+                    [value] => 1
+                )
+
+            [2] => stdClass Object
+                (
+                    [_id] => 61476730d83c93002c661f4d
+                    [fieldId] => 5dba1ece3998d4002264b9c3
+                    [value] => verified
+                )
+
+        )
+
+    [daysInAdvance] => 12
+    [guest] => stdClass Object
+        (
+            [_id] => 613bb1e1585f0b002dedcb97
+            [firstName] => SOFIA
+            [lastName] => CUADROS
+            [fullName] => SOFIA CUADROS
+            [phone] => 573174327871
+            [email] => scuadrosj@gmail.com
+        )
+
+    [listing] => stdClass Object
+        (
+            [_id] => 60302b07f37de300310fdbdc
+            [picture] => stdClass Object
+                (
+                    [thumbnail] => https://res.cloudinary.com/guesty/image/upload/c_fit,h_200/v1613769371/production/5aa56377bba7740015eaab13/akhchjs7kpkdf27bzgrx.jpg
+                )
+
+            [prices] => stdClass Object
+                (
+                    [currency] => USD
+                )
+
+            [type] => SINGLE
+            [address] => stdClass Object
+                (
+                    [full] => 25 Bradley St SE, Atlanta, GA 30312, USA
+                )
+
+            [timezone] => America/Los_Angeles
+            [nickname] => bra_atl-Bradley9
+            [title] => Spacious Atlanta Getaway  and Parks Nearby
+        )
+
+    [notes] => stdClass Object
+        (
+            [other] => Sofia is a friend of Leifs. She helps design for the coffee we have in our units! Lets make her stay wonderful!
+            [guest] => 7871
+        )
+
+    [log] => Array
+        (
+            [0] => stdClass Object
+                (
+                    [_id] => 614c47acfa92090031b2ad45
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => nelly.dimaano@vectorstays.com
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => false
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => money altered
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Stripe Fee
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 title
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 0.11
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 amount
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Stripe Fee Adjustment
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 description
+                                )
+
+                            [4] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => USD
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 currency
+                                )
+
+                            [5] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => MANUAL
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 type
+                                )
+
+                            [6] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => AFE
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 normalType
+                                )
+
+                            [7] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => CREDIT_CARD_PROCESSING_FEE
+                                                )
+
+                                        )
+
+                                    [field] => money invoiceItems 4 secondIdentifier
+                                )
+
+                            [8] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 259
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 259.11
+                                                )
+
+                                        )
+
+                                    [field] => money subTotalPrice
+                                )
+
+                            [9] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 259
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 259.11
+                                                )
+
+                                        )
+
+                                    [field] => money hostPayout
+                                )
+
+                            [10] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 0
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 0.11
+                                                )
+
+                                        )
+
+                                    [field] => money balanceDue
+                                )
+
+                            [11] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => true
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => false
+                                                )
+
+                                        )
+
+                                    [field] => money isFullyPaid
+                                )
+
+                            [12] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 250.95
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 251.06
+                                                )
+
+                                        )
+
+                                    [field] => money netIncome
+                                )
+
+                            [13] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 250.95
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 251.06
+                                                )
+
+                                        )
+
+                                    [field] => money commission
+                                )
+
+                            [14] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 250.95
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 251.06
+                                                )
+
+                                        )
+
+                                    [field] => money commissionIncTax
+                                )
+
+                        )
+
+                    [description] => payments
+                    [at] => 2021-09-23T09:23:56.902Z
+                    [__v] => 0
+                )
+
+            [1] => stdClass Object
+                (
+                    [_id] => 61476730d83c93002c661f8c
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f65860b5a83002efa5a5f
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 61476730d83c93002c661f4f
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => yellow
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => orange
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 value
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f65860b5a83002efa5a5e
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 61476730d83c93002c661f4e
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f65860b5a83002efa5a5d
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 61476730d83c93002c661f4d
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                            [4] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => decline
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => verified
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 value
+                                )
+
+                        )
+
+                    [at] => 2021-09-19T16:37:04.353Z
+                    [__v] => 0
+                )
+
+            [2] => stdClass Object
+                (
+                    [_id] => 613f8c3f3d9e6e002fdafde4
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Hook was added
+                    [description] => Send email to guest 1 day before check out
+                    [by] => jay.bondoc@vectorstays.com
+                    [at] => 2021-09-13T17:37:03.931Z
+                    [changes] => Array
+                        (
+                        )
+
+                    [__v] => 0
+                )
+
+            [3] => stdClass Object
+                (
+                    [_id] => 613f65930b5a83002efa5b8c
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f655d50d698002dc6c0e1
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f65860b5a83002efa5a5f
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f655d50d698002dc6c0e0
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f65860b5a83002efa5a5e
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f655d50d698002dc6c0df
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f65860b5a83002efa5a5d
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => verified
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => decline
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 value
+                                )
+
+                        )
+
+                    [at] => 2021-09-13T14:52:03.015Z
+                    [__v] => 0
+                )
+
+            [4] => stdClass Object
+                (
+                    [_id] => 613f655d50d698002dc6c11e
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f63380b5a83002efa4b97
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f655d50d698002dc6c0e1
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f63380b5a83002efa4b96
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f655d50d698002dc6c0e0
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f63380b5a83002efa4b95
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f655d50d698002dc6c0df
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => review
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => verified
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 value
+                                )
+
+                        )
+
+                    [at] => 2021-09-13T14:51:09.898Z
+                    [__v] => 0
+                )
+
+            [5] => stdClass Object
+                (
+                    [_id] => 613f63380b5a83002efa4bd6
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f62fee44339002d7bcdcc
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f63380b5a83002efa4b97
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f62fee44339002d7bcdcb
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f63380b5a83002efa4b96
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f62fee44339002d7bcdca
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f63380b5a83002efa4b95
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => pending
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => review
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 value
+                                )
+
+                        )
+
+                    [at] => 2021-09-13T14:42:00.707Z
+                    [__v] => 0
+                )
+
+            [6] => stdClass Object
+                (
+                    [_id] => 613f63007343ce00258d7cc4
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Hook was deleted
+                    [description] => Send platform message to guest 4 days before check in
+                    [by] => Reservation update
+                    [at] => 2021-09-13T14:41:04.959Z
+                    [changes] => Array
+                        (
+                        )
+
+                    [__v] => 0
+                )
+
+            [7] => stdClass Object
+                (
+                    [_id] => 613f62fee44339002d7bce09
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f61c1f1fcf7002dae4b0e
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f62fee44339002d7bcdcc
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f61c1f1fcf7002dae4b0d
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f62fee44339002d7bcdcb
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => false
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 value
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613f61c1f1fcf7002dae4b0c
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f62fee44339002d7bcdca
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                        )
+
+                    [at] => 2021-09-13T14:41:02.759Z
+                    [__v] => 0
+                )
+
+            [8] => stdClass Object
+                (
+                    [_id] => 613f61c1f1fcf7002dae4b4b
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613eae59ef8b2f002efc86c3
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f61c1f1fcf7002dae4b0e
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => green
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => yellow
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 value
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613eae59ef8b2f002efc86c2
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f61c1f1fcf7002dae4b0d
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 613eae59ef8b2f002efc86c1
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613f61c1f1fcf7002dae4b0c
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                        )
+
+                    [at] => 2021-09-13T14:35:45.546Z
+                    [__v] => 0
+                )
+
+            [9] => stdClass Object
+                (
+                    [_id] => 613eae59ef8b2f002efc870a
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => API: 1f1ed416f70c013ead3d95e6a7dbea47
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613eae59ef8b2f002efc86c3
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 _id
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 5dba1ece3998d4002264b9c5
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 fieldId
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => green
+                                                )
+
+                                        )
+
+                                    [field] => customFields 0 value
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613eae59ef8b2f002efc86c2
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 _id
+                                )
+
+                            [4] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 5dba1ece3998d4002264b9c4
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 fieldId
+                                )
+
+                            [5] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => false
+                                                )
+
+                                        )
+
+                                    [field] => customFields 1 value
+                                )
+
+                            [6] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613eae59ef8b2f002efc86c1
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 _id
+                                )
+
+                            [7] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 5dba1ece3998d4002264b9c3
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 fieldId
+                                )
+
+                            [8] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pending
+                                                )
+
+                                        )
+
+                                    [field] => customFields 2 value
+                                )
+
+                        )
+
+                    [at] => 2021-09-13T01:50:17.851Z
+                    [__v] => 0
+                )
+
+            [10] => stdClass Object
+                (
+                    [_id] => 613c62aff3fdab003033eb3d
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => VirtualKEY
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 7871
+                                                )
+
+                                        )
+
+                                    [field] => notes guest
+                                )
+
+                        )
+
+                    [at] => 2021-09-11T08:02:55.530Z
+                    [__v] => 0
+                )
+
+            [11] => stdClass Object
+                (
+                    [_id] => 613be2c9e0e16f002f94ff1d
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => ralph.porrazzo@vectorstays.com
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Sofia is a friend of Leifs. She helps design for the coffee we have in our units! Lets make her stay wonderful!
+                                                )
+
+                                        )
+
+                                    [field] => notes other
+                                )
+
+                        )
+
+                    [at] => 2021-09-10T22:57:13.971Z
+                    [__v] => 0
+                )
+
+            [12] => stdClass Object
+                (
+                    [_id] => 613bbb37bcca09002a1c1fa6
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Reservation was updated
+                    [by] => bot
+                    [description] => Charging guest
+                    [changes] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => PENDING
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => SUCCEEDED
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 status
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613bbb37bcca09002a1c1f8a
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 _id
+                                )
+
+                            [2] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => SUCCEEDED
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 status
+                                )
+
+                            [3] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload id
+                                )
+
+                            [4] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => payment_intent
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload object
+                                )
+
+                            [5] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 25900
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload amount
+                                )
+
+                            [6] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 0
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload amount_capturable
+                                )
+
+                            [7] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 25900
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload amount_received
+                                )
+
+                            [8] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => ca_7S8pmecTuFQO5zrKlQiQXAwhqKNNTNy7
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload application
+                                )
+
+                            [9] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 78
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload application_fee_amount
+                                )
+
+                            [10] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => automatic
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload capture_method
+                                )
+
+                            [11] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => list
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges object
+                                )
+
+                            [12] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => ch_3JYG1KGZjqSyOIVc0bbAObPl
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 id
+                                )
+
+                            [13] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => charge
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 object
+                                )
+
+                            [14] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 25900
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 amount
+                                )
+
+                            [15] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 25900
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 amount_captured
+                                )
+
+                            [16] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 0
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 amount_refunded
+                                )
+
+                            [17] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => ca_7S8pmecTuFQO5zrKlQiQXAwhqKNNTNy7
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 application
+                                )
+
+                            [18] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => fee_1JYG1LGZjqSyOIVcI99TWQ8P
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 application_fee
+                                )
+
+                            [19] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 78
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 application_fee_amount
+                                )
+
+                            [20] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => txn_3JYG1KGZjqSyOIVc07t7f75A
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 balance_transaction
+                                )
+
+                            [21] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Lucas Cuadros
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 billing_details name
+                                )
+
+                            [22] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => VECTOR TRAVEL  BOOKING
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 calculated_statement_descriptor
+                                )
+
+                            [23] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 captured
+                                )
+
+                            [24] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 1631304502
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 created
+                                )
+
+                            [25] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => usd
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 currency
+                                )
+
+                            [26] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => cus_KCeiMtp7fHDe02
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 customer
+                                )
+
+                            [27] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => x6nKMpDlz
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 description
+                                )
+
+                            [28] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => false
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 disputed
+                                )
+
+                            [29] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 livemode
+                                )
+
+                            [30] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 5aa56377bba7740015eaab13
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 metadata accountId
+                                )
+
+                            [31] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => x6nKMpDlz
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 metadata confirmationCode
+                                )
+
+                            [32] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613bb1e4585f0b002dedcc5b
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 metadata reservationId
+                                )
+
+                            [33] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => website
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 metadata OTA
+                                )
+
+                            [34] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 60302b07f37de300310fdbdc
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 metadata listingId
+                                )
+
+                            [35] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => SOFIA CUADROS
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 metadata guestName
+                                )
+
+                            [36] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => approved_by_network
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 outcome network_status
+                                )
+
+                            [37] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => normal
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 outcome risk_level
+                                )
+
+                            [38] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 3
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 outcome risk_score
+                                )
+
+                            [39] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Payment complete.
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 outcome seller_message
+                                )
+
+                            [40] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => authorized
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 outcome type
+                                )
+
+                            [41] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 paid
+                                )
+
+                            [42] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_intent
+                                )
+
+                            [43] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pm_1JYFOkGZjqSyOIVcpy2UFXfB
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method
+                                )
+
+                            [44] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => visa
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card brand
+                                )
+
+                            [45] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => US
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card country
+                                )
+
+                            [46] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 3
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card exp_month
+                                )
+
+                            [47] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 2023
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card exp_year
+                                )
+
+                            [48] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => YUlou6wWsL7bZ0MO
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card fingerprint
+                                )
+
+                            [49] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => debit
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card funding
+                                )
+
+                            [50] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 7496
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card last4
+                                )
+
+                            [51] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => visa
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details card network
+                                )
+
+                            [52] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => card
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 payment_method_details type
+                                )
+
+                            [53] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => https://pay.stripe.com/receipts/acct_1CN7jLGZjqSyOIVc/ch_3JYG1KGZjqSyOIVc0bbAObPl/rcpt_KCfM0Qiw7LA6T6urufgzAvZ9Y8yOowI
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 receipt_url
+                                )
+
+                            [54] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => false
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 refunded
+                                )
+
+                            [55] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => list
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 refunds object
+                                )
+
+                            [56] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => false
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 refunds has_more
+                                )
+
+                            [57] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 0
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 refunds total_count
+                                )
+
+                            [58] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => /v1/charges/ch_3JYG1KGZjqSyOIVc0bbAObPl/refunds
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 refunds url
+                                )
+
+                            [59] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Vector Travel  booking
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 statement_descriptor
+                                )
+
+                            [60] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => succeeded
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges data 0 status
+                                )
+
+                            [61] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => false
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges has_more
+                                )
+
+                            [62] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 1
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges total_count
+                                )
+
+                            [63] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => /v1/charges?payment_intent=pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload charges url
+                                )
+
+                            [64] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pi_3JYG1KGZjqSyOIVc0y5J45SY_secret_9kZwQruHbtHfFzIg9iCnsYzxY
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload client_secret
+                                )
+
+                            [65] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => manual
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload confirmation_method
+                                )
+
+                            [66] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 1631304502
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload created
+                                )
+
+                            [67] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => usd
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload currency
+                                )
+
+                            [68] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => cus_KCeiMtp7fHDe02
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload customer
+                                )
+
+                            [69] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => x6nKMpDlz
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload description
+                                )
+
+                            [70] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload livemode
+                                )
+
+                            [71] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 5aa56377bba7740015eaab13
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload metadata accountId
+                                )
+
+                            [72] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => x6nKMpDlz
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload metadata confirmationCode
+                                )
+
+                            [73] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613bb1e4585f0b002dedcc5b
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload metadata reservationId
+                                )
+
+                            [74] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => website
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload metadata OTA
+                                )
+
+                            [75] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 60302b07f37de300310fdbdc
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload metadata listingId
+                                )
+
+                            [76] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => SOFIA CUADROS
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload metadata guestName
+                                )
+
+                            [77] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pm_1JYFOkGZjqSyOIVcpy2UFXfB
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload payment_method
+                                )
+
+                            [78] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => automatic
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload payment_method_options card request_three_d_secure
+                                )
+
+                            [79] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => card
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload payment_method_types 0
+                                )
+
+                            [80] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Vector Travel  booking
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload statement_descriptor
+                                )
+
+                            [81] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => succeeded
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 attempts 0 payload status
+                                )
+
+                            [82] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => Fri Sep 10 2021 20:08:23 GMT+0000 (UTC)
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 paidAt
+                                )
+
+                            [83] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => pi_3JYG1KGZjqSyOIVc0y5J45SY
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 confirmationCode
+                                )
+
+                            [84] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 20256182
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 receiptId
+                                )
+
+                            [85] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 613bb1e1585f0b002dedcb97
+                                                )
+
+                                        )
+
+                                    [field] => money payments 0 guestId
+                                )
+
+                            [86] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 0
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 259
+                                                )
+
+                                        )
+
+                                    [field] => money totalPaid
+                                )
+
+                            [87] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => 259
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => 0
+                                                )
+
+                                        )
+
+                                    [field] => money balanceDue
+                                )
+
+                            [88] => stdClass Object
+                                (
+                                    [diff] => Array
+                                        (
+                                            [0] => stdClass Object
+                                                (
+                                                    [removed] => 1
+                                                    [value] => false
+                                                )
+
+                                            [1] => stdClass Object
+                                                (
+                                                    [added] => 1
+                                                    [value] => true
+                                                )
+
+                                        )
+
+                                    [field] => money isFullyPaid
+                                )
+
+                        )
+
+                    [at] => 2021-09-10T20:08:23.895Z
+                    [__v] => 0
+                )
+
+            [13] => stdClass Object
+                (
+                    [_id] => 613bb1e4585f0b002dedcc70
+                    [reservationId] => 613bb1e4585f0b002dedcc5b
+                    [event] => Booking was confirmed successfully
+                    [at] => 2021-09-10T19:28:36.175Z
+                    [changes] => Array
+                        (
+                        )
+
+                    [__v] => 0
+                )
+
+        )
+
+)

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        body { margin:0px; padding:0px; }
+        #karea {
+            width:100%; margin:0px;
+        }
+        .column {
+            margin-left:25px;
+            display:inline-block;
+            width: calc(25% - 31.25px);
+        }
+        .column>.header {
+            width:100%;
+            display:block;
+            text-align:center;
+            font-size:18px;
+            color:#fff;
+        }
+        .card {
+
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Interview thing</title>
+    <script>
+        function addCard(e) {
+            var newCardBody = window.prompt("Enter card text:");
+            e.find(".cardContainer").append((new card({body:newCardBody})).html)
+        }
+        function column(options) {
+            this.options=options;
+            this.element = $("<div class='column'><div class='header' style='"+
+            (('headerColor' in options)?('background-color: '+options.headerColor+''):'')+
+            "'>"+
+            options.name
+            +"</div><div class='cardContainer'></div><div onClick='addCard($(this).parent())'>+ Add a card</div></div>");
+
+            if('cards' in options) {
+                for (var i in options.cards) {
+                    this.element.find('.cardContainer').append(options.cards[i].html);
+                }
+            }
+        }
+
+        function card(options) {
+            this.options=options;
+            this.html= "<div style='width:100%;'>"+
+                ((options.columnIndex!=0)?
+                    "<div style='width:15px; display:inline-block;' onClick='moveCardLeft("+options.columnIndex+","+options.cardIndex+")'> < </div>":"")+
+                "<div style='width:calc(100% - 30px);  display:inline-block;'>"+options.body+"</div>"+
+                ((options.columnIndex!=3)?
+                    "<div style='width:15px;  display:inline-block;' onClick='moveCardRight("+options.columnIndex+","+options.cardIndex+")'> > </div></div>":"");
+        }
+
+        function moveCardLeft(columnIndex,cardIndex) {
+            var card = columns[columnIndex].options.cards[cardIndex];
+
+            drawColumns();
+        }
+
+        function moveCardRight(columnIndex,cardIndex) {
+            var card = columns[columnIndex].options.cards[cardIndex];
+            columns[columnIndex].options.cards.splice(cardIndex,1);
+            card.columnIndex++;
+            card.cardIndex = columns[columnIndex+1].options.cards.length;
+            columns[columnIndex+1].options.cards.push(card);
+
+            drawColumns();
+        }
+
+        var columns = [
+             new column({name:"Winnie",headerColor:'#8e6e95',
+                 cards:[new card({body:"hello", columnIndex:0, cardIndex:0}),new card({body:"world", columnIndex:0, cardIndex:1})]}),
+             new column({name:"Bob",headerColor:'#39a59c',
+                 cards:[new card({body:"hello", columnIndex:1, cardIndex:0}),new card({body:"world", columnIndex:1, cardIndex:1})]}),
+             new column({name:"Thomas",headerColor:'#344759',
+                 cards:[new card({body:"hello", columnIndex:2, cardIndex:0}),new card({body:"world", columnIndex:2, cardIndex:1})]}),
+             new column({name:"George",headerColor:'#e8741e',
+                 cards:[new card({body:"hello", columnIndex:3, cardIndex:0}),new card({body:"world", columnIndex:3, cardIndex:1})]}),
+        ];
+
+        function drawColumns() {
+            for(var i in columns) {
+                $("#karea").append(columns[i].element);
+            }
+        }
+$(function() {
+    drawColumns();
+});
+    </script>
+</head>
+<body>
+<div id="karea"></div>
+</body>
+</html>

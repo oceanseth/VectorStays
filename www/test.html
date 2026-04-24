@@ -1,0 +1,34 @@
+<html>
+<body id='body'></body>
+<script>
+var thickness=1;
+var leftShift = .5;
+var leftToggle = true;
+var topShift = 1.0;
+function draw() {
+var body = document.getElementById('body');
+
+if(leftToggle) leftShift += .01;
+else leftShift -= .01;
+
+if(leftShift>=2 || leftShift <=0) 
+leftToggle = !leftToggle;
+
+body.innerHTML="";
+for(var i=0; i<255; i++) 
+{
+  var e = document.createElement("DIV"); 
+  e.style.position='absolute';
+  e.style.left = (i*leftShift)+'px';
+  e.style.top = (i*topShift)+'px';
+  e.style.width = document.body.clientWidth-i*2;
+  e.style.height = document.body.clientHeight-i*2;
+  body.appendChild(e);
+  e.style.backgroundColor = 'rgb('+i+','+i+','+i+')';
+}
+
+}
+var myInterval = setInterval(draw,10);
+</script>
+
+</html>
