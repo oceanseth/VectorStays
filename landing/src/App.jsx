@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import Call from './Call'
 import CallViewer from './CallViewer'
 import Disclaimer from './Disclaimer'
+import { AuthProvider, useAuth } from './AuthContext'
+import SignInModal from './SignInModal'
+import HostSignup from './HostSignup'
+import Admin from './Admin'
 import './App.css'
 
 const MCP_URL = 'https://bnbmesh.ai/api/mcp'
@@ -39,7 +43,9 @@ const FEATURES = [
   },
 ]
 
-function Nav({ onTalk, onHost }) {
+function Nav({ onTalk, onHost, onSignIn }) {
+  const { user, isAdmin, signOut } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <nav className="nav">
       <a className="logo" href="/">
@@ -50,6 +56,22 @@ function Nav({ onTalk, onHost }) {
         <a href="#features">Features</a>
         <a href="#mcp">ChatGPT Skill</a>
         <button className="btn btn-ghost" onClick={onTalk}>Talk to support</button>
+        {!user ? (
+          <button className="btn btn-ghost" onClick={onSignIn}>Sign in</button>
+        ) : (
+          <div className="user-menu">
+            <button className="btn btn-ghost" onClick={() => setMenuOpen((v) => !v)}>
+              {user.email || user.phoneNumber || 'Account'} ▾
+            </button>
+            {menuOpen && (
+              <div className="user-menu-dropdown" onMouseLeave={() => setMenuOpen(false)}>
+                {isAdmin && <a href="#admin" onClick={() => setMenuOpen(false)}>Admin</a>}
+                <a href="#become-host" onClick={() => setMenuOpen(false)}>Become a Host</a>
+                <button onClick={() => { setMenuOpen(false); signOut() }}>Sign out</button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </nav>
   )
@@ -286,15 +308,20 @@ function Footer() {
   )
 }
 
-export default function App() {
+function AppShell() {
   const [callMode, setCallMode] = useState(null) // null | 'support' | 'host'
   const [viewCallId, setViewCallId] = useState(null)
+  const [route, setRoute] = useState('home') // home | admin | become-host
+  const [showSignIn, setShowSignIn] = useState(false)
 
-  // Hash routing: #call-<id> → public viewer.
   useEffect(() => {
     const sync = () => {
-      const m = (window.location.hash || '').match(/^#call-([a-f0-9]{32})$/)
+      const h = window.location.hash || ''
+      const m = h.match(/^#call-([a-f0-9]{32})$/)
       setViewCallId(m ? m[1] : null)
+      if (h === '#admin') setRoute('admin')
+      else if (h === '#become-host') setRoute('become-host')
+      else setRoute('home')
     }
     sync()
     window.addEventListener('hashchange', sync)
@@ -304,16 +331,38 @@ export default function App() {
   if (viewCallId) {
     return <CallViewer callId={viewCallId} onClose={() => { window.location.hash = '' }} />
   }
+  if (route === 'admin') {
+    return <Admin />
+  }
+
+  const closeBecomeHost = () => { if (window.location.hash === '#become-host') window.location.hash = '' }
 
   return (
     <>
-      <Nav onTalk={() => setCallMode('support')} onHost={() => setCallMode('host')} />
-      <Hero onTalk={() => setCallMode('support')} onHost={() => setCallMode('host')} />
+      <Nav
+        onTalk={() => setCallMode('support')}
+        onHost={() => { window.location.hash = '#become-host' }}
+        onSignIn={() => setShowSignIn(true)}
+      />
+      <Hero
+        onTalk={() => setCallMode('support')}
+        onHost={() => { window.location.hash = '#become-host' }}
+      />
       <Features />
       <McpSection />
       <Footer />
       {callMode && <Call mode={callMode} onClose={() => setCallMode(null)} />}
+      {route === 'become-host' && <HostSignup onClose={closeBecomeHost} />}
+      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
       <Disclaimer />
     </>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
   )
 }

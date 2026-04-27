@@ -12,6 +12,7 @@
  */
 
 import { createClient } from 'redis'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 const TINYFISH_API_KEY      = process.env.TINYFISH_API_KEY || ''
 const TINYFISH_API_BASE     = process.env.TINYFISH_API_BASE || 'https://agent.tinyfish.ai/v1'
@@ -20,9 +21,74 @@ const VAPI_PRIVATE_KEY      = process.env.VAPI_PRIVATE_KEY || ''
 const VAPI_API_BASE         = 'https://api.vapi.ai'
 const X402_PAYMENT_ADDRESS  = process.env.X402_PAYMENT_ADDRESS || '0x0000000000000000000000000000000000000000'
 const X402_PRICE_USD        = process.env.X402_PRICE_USD || '0.05'
+const FIREBASE_PROJECT_ID   = process.env.FIREBASE_PROJECT_ID || 'vectorsupportagent'
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'seth@voicecert.com,seth@snapchallenge.com,seth@snapchallenge.net')
+  .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+const SSM_BASE = process.env.SSM_BASE || '/bnbmesh/production'
 
 // Call IDs are 32-char hex (128 bits). Reject anything else immediately.
 const CALL_ID_RE = /^[a-f0-9]{32}$/
+
+// ---------------------------------------------------------------------------
+// Firebase ID token verification (modular, no firebase-admin SDK).
+// Verifies signature against Google's public certs, audience = projectId.
+// ---------------------------------------------------------------------------
+
+const FIREBASE_JWKS = createRemoteJWKSet(new URL(
+  'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
+))
+
+async function verifyFirebaseIdToken(authHeader) {
+  if (!authHeader) return null
+  const m = String(authHeader).match(/^Bearer\s+(.+)$/i)
+  if (!m) return null
+  try {
+    const { payload } = await jwtVerify(m[1], FIREBASE_JWKS, {
+      issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+      audience: FIREBASE_PROJECT_ID,
+    })
+    return payload  // includes uid (sub), email, email_verified, phone_number, etc.
+  } catch (e) {
+    console.warn('id token verify failed:', e.code || e.message)
+    return null
+  }
+}
+
+function isAdminClaims(claims) {
+  if (!claims?.email) return false
+  return ADMIN_EMAILS.includes(String(claims.email).toLowerCase())
+}
+
+// ---------------------------------------------------------------------------
+// Secret loader. Source of truth lives in SSM Parameter Store at
+// /bnbmesh/production/* but we hydrate from Lambda env vars to dodge the
+// @aws-sdk/client-ssm ESM/CJS pain on Node 22. terraform/load-ssm.sh fetches
+// the values into TF_VAR_* before apply, so rotation is still one place.
+// ---------------------------------------------------------------------------
+
+// Verify a Stripe webhook signature header against `whsec_...` secret.
+// Header shape: `t=<unix>,v1=<hex>` (and optional v0). Only checks v1.
+async function verifyStripeSignature(rawBody, sigHeader, secret) {
+  if (!sigHeader || !secret) return false
+  const parts = Object.fromEntries(
+    String(sigHeader).split(',').map((p) => p.split('=')).filter((kv) => kv.length === 2),
+  )
+  const t = parts.t
+  const v1 = parts.v1
+  if (!t || !v1) return false
+  const { createHmac, timingSafeEqual } = await import('node:crypto')
+  const mac = createHmac('sha256', secret).update(`${t}.${rawBody}`).digest('hex')
+  try {
+    return timingSafeEqual(Buffer.from(mac, 'hex'), Buffer.from(v1, 'hex'))
+  } catch { return false }
+}
+
+async function ssmGet(name) {
+  if (name.endsWith('/stripe_secret_key'))     return process.env.STRIPE_SECRET_KEY     || ''
+  if (name.endsWith('/stripe_price_id'))       return process.env.STRIPE_PRICE_ID       || ''
+  if (name.endsWith('/stripe_webhook_secret')) return process.env.STRIPE_WEBHOOK_SECRET || ''
+  return ''
+}
 
 const PLATFORMS = ['airbnb', 'vrbo', 'homeaway', 'direct']
 
@@ -720,6 +786,141 @@ export const handler = async (event) => {
     }
 
     return json(405, { error: 'method/sub not supported' })
+  }
+
+  // ---- Admin endpoints (Firebase-auth gated) ----------------------------
+
+  if (path === '/api/admin/leads' || path === '/admin/leads') {
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!isAdminClaims(claims)) return json(403, { error: 'admin only' })
+    const c = await redis()
+    if (!c) return json(503, { error: 'redis not configured' })
+    const raw = await c.lRange('bnbmesh:leads:firehose', 0, 999).catch(() => [])
+    const leads = raw.map((s) => { try { return JSON.parse(s) } catch { return null } }).filter(Boolean)
+    return json(200, { leads })
+  }
+
+  if (path === '/api/admin/hosts' || path === '/admin/hosts') {
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!isAdminClaims(claims)) return json(403, { error: 'admin only' })
+    const c = await redis()
+    if (!c) return json(200, { hosts: [] })
+    const uids = await c.sMembers('bnbmesh:hosts:index').catch(() => [])
+    const hosts = []
+    for (const uid of uids) {
+      try {
+        const v = await c.get(`bnbmesh:host:${uid}`)
+        if (v) hosts.push(JSON.parse(v))
+      } catch {}
+    }
+    return json(200, { hosts })
+  }
+
+  // ---- Stripe checkout ---------------------------------------------------
+  // POST /api/billing/checkout — auth'd. Returns { url } if Stripe configured.
+  if (path === '/api/billing/checkout' || path === '/billing/checkout') {
+    if (method !== 'POST') return json(405, { error: 'method not allowed' })
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!claims) return json(401, { error: 'sign in required' })
+
+    const sk = await ssmGet(`${SSM_BASE}/stripe_secret_key`)
+    const priceId = await ssmGet(`${SSM_BASE}/stripe_price_id`, false)
+    if (!sk || !priceId) {
+      return json(503, { error: 'Stripe not configured yet — admin needs to set SSM params.' })
+    }
+
+    const origin = (event.headers?.origin || event.headers?.Origin || 'https://bnbmesh.ai')
+      .replace(/\/$/, '')
+    const params = new URLSearchParams()
+    params.set('mode', 'subscription')
+    params.set('line_items[0][price]', priceId)
+    params.set('line_items[0][quantity]', '1')
+    params.set('client_reference_id', claims.sub)
+    if (claims.email) params.set('customer_email', claims.email)
+    params.set('success_url', `${origin}/?host_signup=success`)
+    params.set('cancel_url',  `${origin}/?host_signup=cancel`)
+    params.set('metadata[firebase_uid]', claims.sub)
+    if (claims.email) params.set('metadata[firebase_email]', claims.email)
+    if (claims.phone_number) params.set('metadata[firebase_phone]', claims.phone_number)
+
+    try {
+      const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sk}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
+      })
+      const data = await resp.json()
+      if (!resp.ok) {
+        console.warn('stripe checkout error', data)
+        return json(502, { error: data?.error?.message || 'stripe error' })
+      }
+
+      // Pre-create the host record in pending state so admin sees them even if
+      // the webhook is delayed.
+      const c = await redis()
+      if (c) {
+        const host = {
+          uid: claims.sub,
+          email: claims.email || null,
+          phone: claims.phone_number || null,
+          status: 'checkout_started',
+          created_at: new Date().toISOString(),
+          stripe_session_id: data.id,
+        }
+        await c.set(`bnbmesh:host:${claims.sub}`, JSON.stringify(host))
+        await c.sAdd('bnbmesh:hosts:index', claims.sub)
+      }
+
+      return json(200, { url: data.url, session_id: data.id })
+    } catch (e) {
+      return json(502, { error: e.message })
+    }
+  }
+
+  // ---- Stripe webhook ---------------------------------------------------
+  // Verifies signature; on subscription.created/updated, advances host status.
+  if (path === '/api/billing/webhook' || path === '/billing/webhook') {
+    if (method !== 'POST') return json(405, {})
+    const wh = await ssmGet(`${SSM_BASE}/stripe_webhook_secret`)
+    const raw = event.body
+      ? (event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body)
+      : ''
+
+    // Optional: verify signature when wh is set. Skipped if no secret yet.
+    if (wh) {
+      const sig = event.headers?.['stripe-signature'] || event.headers?.['Stripe-Signature']
+      if (!verifyStripeSignature(raw, sig, wh)) return json(400, { error: 'bad signature' })
+    }
+
+    let evt
+    try { evt = JSON.parse(raw) } catch { return json(400, { error: 'bad json' }) }
+
+    const obj = evt.data?.object || {}
+    const uid = obj.metadata?.firebase_uid || obj.client_reference_id
+    if (uid) {
+      const c = await redis()
+      if (c) {
+        const existing = await redisGet(`bnbmesh:host:${uid}`) || {}
+        const host = { ...existing, uid }
+        if (evt.type === 'checkout.session.completed') {
+          host.status = 'active'
+          host.stripe_customer_id = obj.customer || host.stripe_customer_id
+          host.stripe_subscription_id = obj.subscription || host.stripe_subscription_id
+          host.activated_at = new Date().toISOString()
+        } else if (evt.type === 'customer.subscription.deleted') {
+          host.status = 'canceled'
+          host.canceled_at = new Date().toISOString()
+        } else if (evt.type === 'customer.subscription.updated') {
+          host.status = obj.status || host.status
+        }
+        await c.set(`bnbmesh:host:${uid}`, JSON.stringify(host))
+        await c.sAdd('bnbmesh:hosts:index', uid)
+      }
+    }
+    return json(200, { received: true })
   }
 
   // ---- Lead capture (WIP disclaimer popup) -----------------------------

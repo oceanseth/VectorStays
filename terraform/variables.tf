@@ -42,3 +42,23 @@ variable "vapi_private_key" {
   default     = ""
   sensitive   = true
 }
+
+variable "stripe_secret_key" {
+  description = "Stripe secret API key (sk_test_... or sk_live_...). Source of truth: SSM /bnbmesh/production/stripe_secret_key. Hydrate via terraform/load-ssm.sh before apply."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "stripe_price_id" {
+  description = "Stripe Price ID for the $20/month host subscription."
+  type        = string
+  default     = ""
+}
+
+variable "stripe_webhook_secret" {
+  description = "Stripe webhook signing secret (whsec_...). Created after the webhook endpoint URL is live."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

@@ -71,6 +71,20 @@ resource "aws_iam_role_policy_attachment" "api_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# Read-only access to SSM parameters under /bnbmesh/* (Stripe secrets etc.)
+resource "aws_iam_role_policy" "api_ssm" {
+  name = "bnbmesh-api-ssm-read"
+  role = aws_iam_role.api.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"]
+      Resource = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bnbmesh/*"
+    }]
+  })
+}
+
 resource "aws_lambda_function" "api" {
   function_name    = "bnbmesh-api"
   role             = aws_iam_role.api.arn
@@ -91,6 +105,12 @@ resource "aws_lambda_function" "api" {
       REDIS_URL            = var.redis_url
       VAPI_PRIVATE_KEY     = var.vapi_private_key
       X402_PAYMENT_ADDRESS = var.x402_payment_address
+      FIREBASE_PROJECT_ID    = "vectorsupportagent"
+      ADMIN_EMAILS           = "seth@voicecert.com,seth@snapchallenge.com,seth@snapchallenge.net"
+      SSM_BASE               = "/bnbmesh/production"
+      STRIPE_SECRET_KEY      = var.stripe_secret_key
+      STRIPE_PRICE_ID        = var.stripe_price_id
+      STRIPE_WEBHOOK_SECRET  = var.stripe_webhook_secret
     }
   }
 
@@ -241,16 +261,9 @@ resource "aws_cloudfront_distribution" "landing" {
     origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
   }
 
-  custom_error_response {
-    error_code         = 403
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-  custom_error_response {
-    error_code         = 404
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
+  # No custom_error_response — the SPA uses hash routing (/#admin, /#call-{id})
+  # so we don't need 403/404 → index.html. Without these rules, errors from
+  # the API Gateway origin pass through to the client as proper status codes.
 
   restrictions {
     geo_restriction { restriction_type = "none" }

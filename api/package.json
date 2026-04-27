@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/index.mjs",
   "dependencies": {
+    "jose": "^6.2.3",
     "redis": "^5.12.1"
   }
 }
