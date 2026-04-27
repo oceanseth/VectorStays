@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import Vapi from '@vapi-ai/web'
+import VapiSDK from '@vapi-ai/web'
+// @vapi-ai/web ships as CJS with `exports.default = Vapi`. Depending on
+// whether Vite hoists this through esbuild (dev) or Rollup (build), the
+// default import is sometimes the constructor and sometimes a module object.
+// Pick whichever is callable.
+const Vapi = typeof VapiSDK === 'function' ? VapiSDK : VapiSDK?.default
 
 const VAPI_PUBLIC_KEY = '5c140bc1-303b-495f-88c0-ee5e87baefac'
 
@@ -15,28 +20,149 @@ function makeCallId() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-/**
- * Browser-side voice call via the Vapi Web SDK.
- *
- * Mode "support" → BnBMesh travel-support assistant.
- * Mode "host"    → host onboarding assistant that walks the user through
- *                  creating a listing.
- *
- * On call start we mint a 32-char id, register it with our backend, and stream
- * transcript turns to /api/calls/{id}/turn so the viewer at /#call-{id} shows
- * the same transcript live.
- */
+// ---------------------------------------------------------------------------
+// Listing form schema — the assistant calls update_listing(...) with any
+// subset of these fields whenever it captures one during the conversation.
+// ---------------------------------------------------------------------------
+
+const LISTING_FIELDS = [
+  { key: 'address',       label: 'Property address',  type: 'text', placeholder: '123 Main St, Santa Barbara CA' },
+  { key: 'propertyType',  label: 'Property type',     type: 'select', options: ['entire-place', 'private-room', 'shared-room'] },
+  { key: 'bedrooms',      label: 'Bedrooms',          type: 'number' },
+  { key: 'bathrooms',     label: 'Bathrooms',         type: 'number' },
+  { key: 'maxGuests',     label: 'Max guests',        type: 'number' },
+  { key: 'title',         label: 'Listing title',     type: 'text', placeholder: 'Sunny Mesa Loft with Ocean View' },
+  { key: 'description',   label: 'Description',       type: 'textarea' },
+  { key: 'amenities',     label: 'Amenities',         type: 'tags', placeholder: 'wifi, kitchen, parking, pool' },
+  { key: 'nightlyPrice',  label: 'Nightly price (USD)', type: 'number' },
+  { key: 'cleaningFee',   label: 'Cleaning fee (USD)', type: 'number' },
+  { key: 'minNights',     label: 'Minimum nights',    type: 'number' },
+  { key: 'checkIn',       label: 'Check-in time',     type: 'text', placeholder: '3:00 PM' },
+  { key: 'checkOut',      label: 'Check-out time',    type: 'text', placeholder: '11:00 AM' },
+  { key: 'houseRules',    label: 'House rules',       type: 'textarea' },
+]
+
+const HOST_SYSTEM_PROMPT = `You are the BnBMesh host onboarding agent. Your goal is to collect the information needed to publish a short-term rental listing — address, property type, bedrooms, bathrooms, max guests, title, description, amenities, nightly price, cleaning fee, minimum nights, check-in/check-out times, and house rules.
+
+Have a natural, friendly conversation. Ask ONE question at a time. Confirm briefly and move on. Don't read back the full form unless the host asks. End the call by summarizing the listing in two sentences.
+
+CRITICAL: As soon as you learn the value of any field, call the update_listing function with JUST that field. Do not wait until the end. Update the form continuously as the conversation progresses. If the host changes a value, call update_listing again with the new value. The host can also see the form on screen and may type changes themselves; trust whatever value is already in the form unless they say otherwise.
+
+Examples:
+- Host: "It's at 123 Main Street, Santa Barbara." → call update_listing({ address: "123 Main St, Santa Barbara, CA" })
+- Host: "Three bedrooms, two baths, sleeps six." → call update_listing({ bedrooms: 3, bathrooms: 2, maxGuests: 6 })
+- Host: "We charge two hundred a night plus seventy-five for cleaning." → call update_listing({ nightlyPrice: 200, cleaningFee: 75 })`
+
+const UPDATE_LISTING_TOOL = {
+  type: 'function',
+  async: true, // fire-and-forget — the assistant doesn't need a response
+  function: {
+    name: 'update_listing',
+    description: 'Update one or more fields on the listing form. Call this immediately whenever you learn a value during the conversation. Pass only the fields you just learned.',
+    parameters: {
+      type: 'object',
+      properties: {
+        address:       { type: 'string' },
+        propertyType:  { type: 'string', enum: ['entire-place', 'private-room', 'shared-room'] },
+        bedrooms:      { type: 'number' },
+        bathrooms:     { type: 'number' },
+        maxGuests:     { type: 'number' },
+        title:         { type: 'string' },
+        description:   { type: 'string' },
+        amenities:     { type: 'array', items: { type: 'string' } },
+        nightlyPrice:  { type: 'number' },
+        cleaningFee:   { type: 'number' },
+        minNights:     { type: 'number' },
+        checkIn:       { type: 'string' },
+        checkOut:      { type: 'string' },
+        houseRules:    { type: 'string' },
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
+// Form sub-component — controlled inputs, highlights the most-recently-updated field.
+// ---------------------------------------------------------------------------
+
+function ListingForm({ values, onChange, recentlyUpdated }) {
+  return (
+    <div className="listing-form">
+      <h4 className="listing-form-title">Your listing</h4>
+      <p className="listing-form-hint">The agent fills this in as you talk. Type to override anything.</p>
+      {LISTING_FIELDS.map((f) => {
+        const v = values[f.key] ?? ''
+        const cls = `listing-field${recentlyUpdated === f.key ? ' is-fresh' : ''}`
+        return (
+          <div key={f.key} className={cls}>
+            <label htmlFor={`field-${f.key}`}>{f.label}</label>
+            {f.type === 'textarea' ? (
+              <textarea
+                id={`field-${f.key}`}
+                value={v}
+                rows={3}
+                placeholder={f.placeholder || ''}
+                onChange={(e) => onChange(f.key, e.target.value)}
+              />
+            ) : f.type === 'select' ? (
+              <select
+                id={`field-${f.key}`}
+                value={v}
+                onChange={(e) => onChange(f.key, e.target.value)}
+              >
+                <option value=""></option>
+                {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            ) : f.type === 'number' ? (
+              <input
+                id={`field-${f.key}`}
+                type="number"
+                value={v}
+                onChange={(e) => onChange(f.key, e.target.value === '' ? '' : Number(e.target.value))}
+              />
+            ) : f.type === 'tags' ? (
+              <input
+                id={`field-${f.key}`}
+                type="text"
+                value={Array.isArray(v) ? v.join(', ') : v}
+                placeholder={f.placeholder || ''}
+                onChange={(e) => onChange(f.key, e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
+              />
+            ) : (
+              <input
+                id={`field-${f.key}`}
+                type="text"
+                value={v}
+                placeholder={f.placeholder || ''}
+                onChange={(e) => onChange(f.key, e.target.value)}
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Main call modal
+// ---------------------------------------------------------------------------
+
 export default function Call({ mode = 'support', onClose }) {
   const [status, setStatus] = useState('idle') // idle | connecting | live | ended | error
   const [transcript, setTranscript] = useState([])
   const [callId] = useState(makeCallId)
   const [shareCopied, setShareCopied] = useState(false)
   const [error, setError] = useState(null)
+  const [listing, setListing] = useState({})
+  const [recentField, setRecentField] = useState(null)
   const vapiRef = useRef(null)
   const transcriptRef = useRef(null)
 
+  const isHost = mode === 'host'
   const shareUrl = `${window.location.origin}/#call-${callId}`
 
+  // ---- Vapi setup -------------------------------------------------------
   useEffect(() => {
     const vapi = new Vapi(VAPI_PUBLIC_KEY)
     vapiRef.current = vapi
@@ -55,46 +181,84 @@ export default function Call({ mode = 'support', onClose }) {
       fetch(`/api/calls/${callId}/end`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ended_at: new Date().toISOString() }),
+        body: JSON.stringify({ ended_at: new Date().toISOString(), listing: isHost ? listing : null }),
       }).catch(() => {})
     })
 
     vapi.on('error', (e) => {
       console.error('vapi err', e)
-      setError(e?.error?.message || e?.message || 'unknown error')
+      // Vapi sometimes puts the API response object on e.message — coerce
+      // anything non-string to JSON so React doesn't choke on rendering.
+      const raw = e?.error?.message ?? e?.message ?? e?.error ?? e
+      const msg = typeof raw === 'string' ? raw : (() => {
+        try { return JSON.stringify(raw) } catch { return 'unknown error' }
+      })()
+      setError(msg)
       setStatus('error')
     })
 
     vapi.on('message', (msg) => {
-      if (msg.type !== 'transcript') return
-      if (msg.transcriptType !== 'final') return
-      const turn = {
-        role: msg.role,                          // 'user' or 'assistant'
-        text: msg.transcript,
-        at: new Date().toISOString(),
+      if (msg.type === 'transcript' && msg.transcriptType === 'final') {
+        const turn = { role: msg.role, text: msg.transcript, at: new Date().toISOString() }
+        setTranscript((t) => [...t, turn])
+        fetch(`/api/calls/${callId}/turn`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(turn),
+        }).catch(() => {})
+        return
       }
-      setTranscript((t) => [...t, turn])
-      fetch(`/api/calls/${callId}/turn`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(turn),
-      }).catch(() => {})
+      // Vapi tool-calls — assistant invoked update_listing.
+      if (msg.type === 'tool-calls' && Array.isArray(msg.toolCallList)) {
+        for (const tc of msg.toolCallList) {
+          const name = tc?.function?.name || tc?.name
+          if (name !== 'update_listing') continue
+          let args = tc?.function?.arguments ?? tc?.arguments ?? {}
+          if (typeof args === 'string') {
+            try { args = JSON.parse(args) } catch { args = {} }
+          }
+          applyListingPatch(args)
+        }
+      }
     })
 
     return () => { try { vapi.stop() } catch {} }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callId, mode])
 
   useEffect(() => {
     if (transcriptRef.current) transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight
   }, [transcript])
 
+  // Apply a partial-update patch from either tool-call or manual edit.
+  const applyListingPatch = (patch) => {
+    if (!patch || typeof patch !== 'object') return
+    const keys = Object.keys(patch)
+    if (!keys.length) return
+    setListing((prev) => ({ ...prev, ...patch }))
+    setRecentField(keys[0])
+    setTimeout(() => setRecentField((curr) => (curr === keys[0] ? null : curr)), 1800)
+  }
+
+  const onFieldChange = (key, value) => {
+    setListing((prev) => ({ ...prev, [key]: value }))
+  }
+
+  // ---- Start / stop -----------------------------------------------------
+
   const start = async () => {
     setStatus('connecting')
     setError(null)
     try {
-      await vapiRef.current.start(ASSISTANTS[mode])
+      // Tools + system prompt live on the assistant itself (PATCH'd via the
+      // Vapi API). Overrides only carry the bnbmesh call id so the webhook
+      // can join up to the right Redis record.
+      await vapiRef.current.start(ASSISTANTS[mode], {
+        metadata: { bnbmesh_call_id: callId, mode },
+      })
     } catch (e) {
-      setError(e?.message || 'could not start call')
+      const raw = e?.message ?? e
+      setError(typeof raw === 'string' ? raw : (() => { try { return JSON.stringify(raw) } catch { return 'could not start call' } })())
       setStatus('error')
     }
   }
@@ -109,69 +273,79 @@ export default function Call({ mode = 'support', onClose }) {
     } catch {}
   }
 
+  // ---- Render -----------------------------------------------------------
+
   return (
     <div className="callmodal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose?.() }}>
-      <div className="callmodal">
+      <div className={`callmodal ${isHost ? 'callmodal-wide' : ''}`}>
         <div className="callmodal-head">
-          <h3>{mode === 'host' ? 'Become a Host' : 'BnBMesh Voice Support'}</h3>
+          <h3>{isHost ? 'Become a Host' : 'BnBMesh Voice Support'}</h3>
           <button className="callmodal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        <div className="callmodal-body">
-          {status === 'idle' && (
-            <div className="callmodal-intro">
-              <p>
-                {mode === 'host'
-                  ? 'Talk to our onboarding agent and we will collect everything we need to list your place — address, beds, price, amenities. Takes about three minutes.'
-                  : 'Talk to a BnBMesh agent about finding a stay, splitting a trip across listings, or anything about your reservation.'}
-              </p>
-              <button className="btn btn-primary callmodal-cta" onClick={start}>
-                {mode === 'host' ? 'Start onboarding call' : 'Start call'}
-              </button>
-              <p className="callmodal-hint">Browser will ask for microphone access.</p>
-            </div>
-          )}
-
-          {(status === 'connecting' || status === 'live' || status === 'ended') && (
-            <>
-              <div className="callmodal-status">
-                <span className={`status-dot status-${status}`}></span>
-                <span>{status === 'connecting' ? 'Connecting…' : status === 'live' ? 'Connected' : 'Call ended'}</span>
+        <div className={`callmodal-body ${isHost ? 'callmodal-body-split' : ''}`}>
+          <div className="callmodal-pane">
+            {status === 'idle' && (
+              <div className="callmodal-intro">
+                <p>
+                  {isHost
+                    ? 'Talk to our onboarding agent. They will ask about your place — address, beds, price, amenities — and the form on the right will fill in as you talk. Edit anything by typing.'
+                    : 'Talk to a BnBMesh agent about finding a stay, splitting a trip across listings, or anything about your reservation.'}
+                </p>
+                <button className="btn btn-primary callmodal-cta" onClick={start}>
+                  {isHost ? 'Start onboarding call' : 'Start call'}
+                </button>
+                <p className="callmodal-hint">Browser will ask for microphone access.</p>
               </div>
+            )}
 
-              <div className="callmodal-transcript" ref={transcriptRef}>
-                {transcript.length === 0 && status !== 'ended' && (
-                  <p className="callmodal-tip">Say something — the transcript will appear here.</p>
-                )}
-                {transcript.map((t, i) => (
-                  <div key={i} className={`turn turn-${t.role}`}>
-                    <span className="turn-role">{t.role === 'assistant' ? 'agent' : 'you'}</span>
-                    <span className="turn-text">{t.text}</span>
-                  </div>
-                ))}
+            {(status === 'connecting' || status === 'live' || status === 'ended') && (
+              <>
+                <div className="callmodal-status">
+                  <span className={`status-dot status-${status}`}></span>
+                  <span>{status === 'connecting' ? 'Connecting…' : status === 'live' ? 'Connected' : 'Call ended'}</span>
+                </div>
+
+                <div className="callmodal-transcript" ref={transcriptRef}>
+                  {transcript.length === 0 && status !== 'ended' && (
+                    <p className="callmodal-tip">Say something — the transcript will appear here.</p>
+                  )}
+                  {transcript.map((t, i) => (
+                    <div key={i} className={`turn turn-${t.role}`}>
+                      <span className="turn-role">{t.role === 'assistant' ? 'agent' : 'you'}</span>
+                      <span className="turn-text">{t.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="callmodal-share">
+                  <input readOnly value={shareUrl} onFocus={(e) => e.target.select()} />
+                  <button className="btn btn-ghost btn-sm" onClick={copyShare}>{shareCopied ? 'Copied' : 'Share'}</button>
+                </div>
+
+                <div className="callmodal-actions">
+                  {status === 'live' && (
+                    <button className="btn btn-danger" onClick={stop}>End call</button>
+                  )}
+                  {status === 'ended' && (
+                    <button className="btn btn-primary" onClick={onClose}>Done</button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {status === 'error' && (
+              <div className="callmodal-error">
+                <p><strong>Couldn't start the call.</strong></p>
+                <p className="callmodal-tip">{error}</p>
+                <button className="btn btn-ghost" onClick={onClose}>Close</button>
               </div>
+            )}
+          </div>
 
-              <div className="callmodal-share">
-                <input readOnly value={shareUrl} onFocus={(e) => e.target.select()} />
-                <button className="btn btn-ghost btn-sm" onClick={copyShare}>{shareCopied ? 'Copied' : 'Share'}</button>
-              </div>
-
-              <div className="callmodal-actions">
-                {status === 'live' && (
-                  <button className="btn btn-danger" onClick={stop}>End call</button>
-                )}
-                {status === 'ended' && (
-                  <button className="btn btn-primary" onClick={onClose}>Done</button>
-                )}
-              </div>
-            </>
-          )}
-
-          {status === 'error' && (
-            <div className="callmodal-error">
-              <p><strong>Couldn't start the call.</strong></p>
-              <p className="callmodal-tip">{error}</p>
-              <button className="btn btn-ghost" onClick={onClose}>Close</button>
+          {isHost && (
+            <div className="callmodal-pane callmodal-form-pane">
+              <ListingForm values={listing} onChange={onFieldChange} recentlyUpdated={recentField} />
             </div>
           )}
         </div>

@@ -55,14 +55,14 @@ code {
   letter-spacing: -0.02em;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: var(--fg);
 }
 .logo-mark {
   display: inline-block;
-  color: var(--accent);
-  font-size: 1.45rem;
-  line-height: 1;
-  transform: translateY(1px);
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
 .nav-links {
@@ -416,6 +416,105 @@ section { scroll-margin-top: 24px; }
   width: 100%; max-width: 560px; max-height: 90vh;
   display: flex; flex-direction: column;
   box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.callmodal-wide { max-width: 1080px; }
+.callmodal-body-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 22px;
+}
+.callmodal-pane { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.callmodal-form-pane {
+  background: rgba(0,0,0,0.22);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  max-height: 70vh; overflow-y: auto;
+}
+@media (max-width: 800px) {
+  .callmodal-wide { max-width: 560px; }
+  .callmodal-body-split { grid-template-columns: 1fr; }
+  .callmodal-form-pane { max-height: 50vh; }
+}
+
+.listing-form-title { margin: 0 0 4px; font-size: 0.95rem; }
+.listing-form-hint { color: var(--fg-dim); font-size: 0.78rem; margin: 0 0 14px; }
+.listing-field { margin-bottom: 10px; transition: background 0.18s ease; padding: 6px 8px; border-radius: 8px; border: 1px solid transparent; }
+.listing-field.is-fresh { background: rgba(92,235,213,0.08); border-color: rgba(92,235,213,0.3); }
+.listing-field label {
+  display: block;
+  font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--fg-dim); margin-bottom: 4px;
+}
+.listing-field input, .listing-field textarea, .listing-field select {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--card-border);
+  color: var(--fg);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.listing-field input:focus, .listing-field textarea:focus, .listing-field select:focus {
+  outline: none; border-color: var(--accent);
+}
+.listing-field textarea { resize: vertical; min-height: 60px; }
+
+/* ---------- Disclaimer popup ---------- */
+
+.disclaimer-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(8, 11, 19, 0.82);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+}
+.disclaimer-card {
+  background: var(--bg-2);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  width: 100%; max-width: 520px;
+  padding: 28px 28px 22px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.disclaimer-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.disclaimer-head h3 { margin: 0; font-size: 1.1rem; letter-spacing: -0.01em; }
+.disclaimer-body { color: var(--fg-muted); font-size: 0.95rem; line-height: 1.55; margin: 0 0 12px; }
+.disclaimer-form { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+.disclaimer-label { display: flex; flex-direction: column; gap: 6px; }
+.disclaimer-label > span { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-dim); }
+.disclaimer-label input {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--card-border);
+  color: var(--fg); padding: 10px 12px; border-radius: 8px; font-size: 0.95rem;
+}
+.disclaimer-label input:focus { outline: none; border-color: var(--accent); }
+.disclaimer-intent { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.disclaimer-intent legend { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 4px; }
+.disclaimer-intent label { color: var(--fg-muted); font-size: 0.92rem; display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.disclaimer-intent input { accent-color: var(--accent); }
+.disclaimer-error { color: var(--danger); font-size: 0.85rem; margin: 0; }
+.disclaimer-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.disclaimer-thanks { color: var(--accent); margin: 18px 0 0; }
+
+/* ---------- Result row badges ---------- */
+
+.demo-result-direct { border-color: rgba(92, 235, 213, 0.4); }
+.demo-result-mock   { opacity: 0.85; }
+.demo-badge {
+  display: inline-block; margin-left: 8px;
+  font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px; vertical-align: middle;
+}
+.demo-badge-direct {
+  background: rgba(92, 235, 213, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(92, 235, 213, 0.35);
+}
+.demo-badge-mock {
+  background: rgba(255, 200, 100, 0.08);
+  color: #f5b133;
+  border: 1px solid rgba(245, 177, 51, 0.3);
 }
 .callmodal-head {
   display: flex; justify-content: space-between; align-items: center;

@@ -30,6 +30,9 @@ const PLATFORMS = ['airbnb', 'vrbo', 'homeaway', 'direct']
 // Mock search — deterministic fallback so demos look consistent.
 // ---------------------------------------------------------------------------
 
+// "demo" placeholders — used ONLY when TinyFish times out so the UI has
+// something to render. Never includes "direct" pricing because we don't make
+// up direct listings. The frontend should label these as demo, not real.
 function mockSearchResults(q) {
   const seed = hashString(q || 'default')
   const city = extractCity(q) || 'Santa Barbara'
@@ -40,10 +43,13 @@ function mockSearchResults(q) {
     ['Mountainside Cabin', 'Big Bear, CA'],
     ['Historic Craftsman', 'Pasadena, CA'],
   ]
+  // Only platforms we'd legitimately scrape from. "direct" is intentionally
+  // absent — real direct listings come from Redis only.
+  const SCRAPE_PLATFORMS = ['airbnb', 'vrbo', 'homeaway']
   return samples.map((s, i) => {
     const base = 120 + ((seed + i * 37) % 280)
     const platforms = Object.fromEntries(
-      PLATFORMS.map((p, j) => [p, Math.round(base * (1 + ((seed >> (j + 1)) & 0x1f) / 100))])
+      SCRAPE_PLATFORMS.map((p, j) => [p, Math.round(base * (1 + ((seed >> (j + 1)) & 0x1f) / 100))])
     )
     const cheapestPlatform = Object.entries(platforms).sort((a, b) => a[1] - b[1])[0][0]
     return {
@@ -54,6 +60,7 @@ function mockSearchResults(q) {
       cheapestPlatform,
       platforms,
       beds: i === 0 ? beds : 2 + (i % 3),
+      isDemo: true,
     }
   })
 }
@@ -148,27 +155,90 @@ async function _tinyfishRunInner(url, goal, { stealth, signal }) {
   throw new Error('tinyfish: no COMPLETE event in stream')
 }
 
+// Read direct listings from Redis (host-onboarded inventory). These are
+// added to the index whenever a host call ends with structured listing
+// data captured by the Vapi `update_listing` tool. We never invent direct
+// listings — if no host has onboarded one, none show.
+async function fetchDirectListings(query) {
+  const c = await redis()
+  if (!c) return []
+  let ids = []
+  try {
+    ids = await c.sMembers('bnbmesh:listings:index')
+  } catch { return [] }
+  if (!ids?.length) return []
+  const items = []
+  for (const id of ids) {
+    try {
+      const raw = await c.get(`bnbmesh:listing:${id}`)
+      if (!raw) continue
+      const l = JSON.parse(raw)
+      if (matchesQuery(l, query)) items.push(toDirectResult(l))
+    } catch {}
+  }
+  return items
+}
+
+function matchesQuery(listing, query) {
+  if (!query) return true
+  const hay = `${listing.address || ''} ${listing.title || ''} ${listing.description || ''} ${(listing.amenities || []).join(' ')}`.toLowerCase()
+  return query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 2)
+    .some((t) => hay.includes(t))
+}
+
+function toDirectResult(l) {
+  const price = l.nightlyPrice ? Math.round(Number(l.nightlyPrice)) : null
+  return {
+    id: `direct_${l.id || (l.address || Math.random().toString(36).slice(2)).replace(/\W+/g, '_')}`,
+    title: l.title || 'BnBMesh Direct Listing',
+    location: l.address || '',
+    beds: l.bedrooms ?? null,
+    platforms: price ? { direct: price } : {},
+    cheapestPlatform: price ? 'direct' : null,
+    nightlyPrice: price,
+    isDirect: true,
+  }
+}
+
 // Upstash Redis is the cache of record. In-memory Map is a per-Lambda-container
 // L1 on top so the same warm container doesn't pay a Redis round-trip twice.
 const L1_CACHE = new Map()
 const SEARCH_TTL_SECONDS = 10 * 60
 
 async function searchListings(query, { timeoutMs = 22000 } = {}) {
+  // Always try to surface real direct listings — independent of TinyFish.
+  const direct = await fetchDirectListings(query)
+
   if (!TINYFISH_API_KEY) {
-    return { source: 'mock', results: mockSearchResults(query) }
+    return {
+      source: direct.length ? 'demo+direct' : 'demo',
+      results: [...direct, ...mockSearchResults(query)],
+      direct_count: direct.length,
+    }
   }
   const cacheKey = `bnbmesh:search:${query.trim().toLowerCase()}`
   // L1 (in-memory)
   const l1 = L1_CACHE.get(cacheKey)
   if (l1 && l1.expires > Date.now()) {
-    return { source: 'cache-l1', results: l1.results }
+    return {
+      source: direct.length ? 'live-cached+direct' : 'live-cached',
+      results: [...direct, ...l1.results],
+      direct_count: direct.length,
+    }
   }
   // L2 (Upstash Redis)
   if (redisConfigured()) {
     const cached = await redisGet(cacheKey)
     if (cached && Array.isArray(cached)) {
       L1_CACHE.set(cacheKey, { results: cached, expires: Date.now() + 60_000 })
-      return { source: 'redis', results: cached }
+      return {
+        source: direct.length ? 'live-cached+direct' : 'live-cached',
+        results: [...direct, ...cached],
+        direct_count: direct.length,
+      }
     }
   }
   try {
@@ -199,10 +269,19 @@ async function searchListings(query, { timeoutMs = 22000 } = {}) {
       // Fire-and-forget so we don't block the response on the write.
       redisSetEx(cacheKey, SEARCH_TTL_SECONDS, results).catch(() => {})
     }
-    return { source: 'tinyfish', results }
+    return {
+      source: direct.length ? 'live+direct' : 'live',
+      results: [...direct, ...results],
+      direct_count: direct.length,
+    }
   } catch (e) {
     console.warn('tinyfish threw:', e.message)
-    return { source: 'mock', fallback_reason: e.message, results: mockSearchResults(query) }
+    return {
+      source: direct.length ? 'demo+direct' : 'demo',
+      results: [...direct, ...mockSearchResults(query)],
+      fallback_reason: e.message,
+      direct_count: direct.length,
+    }
   }
 }
 
@@ -589,6 +668,24 @@ export const handler = async (event) => {
       meta.status = 'ended'
       meta.ended_at = body?.ended_at || new Date().toISOString()
       await redisSetEx(metaKey, 7 * 24 * 3600, meta)
+
+      // If this was a host onboarding call, persist the captured listing.
+      // We require enough fields to be useful (address + title or price).
+      if (meta.mode === 'host' && body?.listing && (body.listing.address || body.listing.title) && body.listing.nightlyPrice) {
+        const listing = {
+          ...body.listing,
+          id,
+          submitted_at: new Date().toISOString(),
+          source_call_id: id,
+        }
+        const c = await redis()
+        if (c) {
+          await c.set(`bnbmesh:listing:${id}`, JSON.stringify(listing))
+          await c.sAdd('bnbmesh:listings:index', id)
+          // Long TTL — these are user-submitted, not transient.
+          await c.expire(`bnbmesh:listing:${id}`, 90 * 24 * 3600)
+        }
+      }
       return json(200, { ok: true, meta })
     }
 
@@ -623,6 +720,34 @@ export const handler = async (event) => {
     }
 
     return json(405, { error: 'method/sub not supported' })
+  }
+
+  // ---- Lead capture (WIP disclaimer popup) -----------------------------
+  // POST /api/leads { email, intent: 'notify' | 'investor' | 'partner', source }
+  // Stores in Redis; never returns existing leads to clients.
+  if (path === '/api/leads' || path === '/leads') {
+    if (method !== 'POST') return json(405, { error: 'method not allowed' })
+    let body = {}
+    try {
+      body = event.body
+        ? (event.isBase64Encoded ? JSON.parse(Buffer.from(event.body, 'base64').toString()) : JSON.parse(event.body))
+        : {}
+    } catch { return json(400, { error: 'bad json' }) }
+    const email = (body.email || '').trim().toLowerCase()
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return json(400, { error: 'invalid email' })
+    }
+    const intent = ['notify', 'investor', 'partner'].includes(body.intent) ? body.intent : 'notify'
+    const source = (body.source || 'disclaimer').slice(0, 64)
+    const lead = { email, intent, source, captured_at: new Date().toISOString() }
+    const c = await redis()
+    if (c) {
+      await c.set(`bnbmesh:lead:${email}`, JSON.stringify(lead))
+      await c.sAdd('bnbmesh:leads:index', email)
+      await c.lPush('bnbmesh:leads:firehose', JSON.stringify(lead))
+      await c.lTrim('bnbmesh:leads:firehose', 0, 999)
+    }
+    return json(200, { ok: true })
   }
 
   // Vapi → us webhook. If you set this URL on the assistant, we'll mirror the

@@ -9,6 +9,8 @@
 /tools/revestment_config.json
 /tools/setupProperlyWebhook.js
 /tools/testGetReservation.php
+/api/.env
+.env
 /docker/php-fpm/insecure_id_rsa
 /docker/php-fpm/insecure_id_rsa.pub
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Call from './Call'
 import CallViewer from './CallViewer'
+import Disclaimer from './Disclaimer'
 import './App.css'
 
 const MCP_URL = 'https://bnbmesh.ai/api/mcp'
@@ -42,7 +43,8 @@ function Nav({ onTalk, onHost }) {
   return (
     <nav className="nav">
       <a className="logo" href="/">
-        <span className="logo-mark">≋</span> bnbmesh
+        <img src="/logo.svg" alt="" className="logo-mark" width="28" height="28" />
+        bnbmesh
       </a>
       <div className="nav-links">
         <a href="#features">Features</a>
@@ -61,6 +63,19 @@ function Nav({ onTalk, onHost }) {
  * When the user stops speaking we drop the transcript into the input and fire
  * the search automatically.
  */
+function sourceLabel(source, directCount) {
+  if (!source) return ''
+  const map = {
+    'live':              'live TinyFish scrape',
+    'live-cached':       'live TinyFish (Redis-cached)',
+    'live+direct':       `live scrape · ${directCount} direct`,
+    'live-cached+direct':`Redis-cached · ${directCount} direct`,
+    'demo':              'demo placeholders (Airbnb scrape unavailable)',
+    'demo+direct':       `demo placeholders · ${directCount} direct`,
+  }
+  return map[source] || source
+}
+
 function Hero({ onTalk, onHost }) {
   const [q, setQ] = useState('3 bedroom in Santa Barbara Memorial Day weekend')
   const [state, setState] = useState({ loading: false, results: null, error: null, source: null })
@@ -75,7 +90,7 @@ function Hero({ onTalk, onHost }) {
       const r = await fetch(`/api/search?q=${encodeURIComponent(effective)}`)
       if (!r.ok) throw new Error('HTTP ' + r.status)
       const j = await r.json()
-      setState({ loading: false, results: j.results || [], error: null, source: j.source })
+      setState({ loading: false, results: j.results || [], error: null, source: j.source, directCount: j.direct_count || 0 })
     } catch (err) {
       setState({ loading: false, results: null, error: err.message, source: null })
     }
@@ -172,13 +187,16 @@ function Hero({ onTalk, onHost }) {
         {state.results && state.results.length > 0 && (
           <div className="hero-results-wrap">
             <p className="demo-meta">
-              {state.results.length} listings · powered by{' '}
-              <strong>{state.source === 'tinyfish' ? 'TinyFish live scraping' : 'deterministic mock'}</strong>
+              {state.results.length} listings — {sourceLabel(state.source, state.directCount)}
             </p>
             <ul className="demo-results">
-              {state.results.slice(0, 6).map((r) => (
-                <li key={r.id}>
-                  <div className="demo-result-title">{r.title}</div>
+              {state.results.slice(0, 8).map((r) => (
+                <li key={r.id} className={r.isDirect ? 'demo-result-direct' : (r.isDemo ? 'demo-result-mock' : '')}>
+                  <div className="demo-result-title">
+                    {r.title}
+                    {r.isDirect && <span className="demo-badge demo-badge-direct">direct</span>}
+                    {r.isDemo && <span className="demo-badge demo-badge-mock">demo</span>}
+                  </div>
                   <div className="demo-result-sub">
                     {r.location}
                     {r.nightlyPrice ? ` · $${r.nightlyPrice}/night` : ''}
@@ -295,6 +313,7 @@ export default function App() {
       <McpSection />
       <Footer />
       {callMode && <Call mode={callMode} onClose={() => setCallMode(null)} />}
+      <Disclaimer />
     </>
   )
 }

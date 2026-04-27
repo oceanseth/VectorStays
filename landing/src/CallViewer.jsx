@@ -94,7 +94,8 @@ export default function CallViewer({ callId, onClose }) {
     <div className="callviewer">
       <header className="callviewer-head">
         <a className="logo" href="/">
-          <span className="logo-mark">≋</span> bnbmesh
+          <img src="/logo.svg" alt="" className="logo-mark" width="28" height="28" />
+          bnbmesh
         </a>
         <button className="btn btn-ghost btn-sm" onClick={onClose}>← back</button>
       </header>
