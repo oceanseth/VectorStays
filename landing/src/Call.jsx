@@ -158,8 +158,15 @@ export default function Call({ mode = 'support', onClose }) {
   const [error, setError] = useState(null)
   const [listing, setListing] = useState({})
   const [recentField, setRecentField] = useState(null)
+  const [saveState, setSaveState] = useState('idle') // idle | saving | saved | failed
+  const [saveError, setSaveError] = useState(null)
   const vapiRef = useRef(null)
   const transcriptRef = useRef(null)
+  const listingRef = useRef({})
+
+  // Keep listingRef in sync so async callbacks (tool handlers, save) read
+  // the latest form state without stale-closure bugs.
+  useEffect(() => { listingRef.current = listing }, [listing])
 
   const isHost = mode === 'host'
   const shareUrl = `${window.location.origin}/#call-${callId}`
@@ -219,16 +226,20 @@ export default function Call({ mode = 'support', onClose }) {
         }).catch(() => {})
         return
       }
-      // Vapi tool-calls — assistant invoked update_listing.
+      // Vapi tool-calls — assistant invoked update_listing or submit_listing.
       if (msg.type === 'tool-calls' && Array.isArray(msg.toolCallList)) {
         for (const tc of msg.toolCallList) {
           const name = tc?.function?.name || tc?.name
-          if (name !== 'update_listing') continue
           let args = tc?.function?.arguments ?? tc?.arguments ?? {}
           if (typeof args === 'string') {
             try { args = JSON.parse(args) } catch { args = {} }
           }
-          applyListingPatch(args)
+          if (name === 'update_listing') {
+            applyListingPatch(args)
+          } else if (name === 'submit_listing') {
+            // Agent thinks the form is complete. Persist and end the call.
+            saveListing({ endCall: true })
+          }
         }
       }
     })
@@ -253,6 +264,38 @@ export default function Call({ mode = 'support', onClose }) {
 
   const onFieldChange = (key, value) => {
     setListing((prev) => ({ ...prev, [key]: value }))
+    if (saveState === 'saved') setSaveState('idle') // edits invalidate the saved state
+  }
+
+  const canSave = isHost && !!listingRef.current?.address && !!listingRef.current?.nightlyPrice
+
+  // Save the current listing under the host's account. Used both by the
+  // explicit "Save" button and the agent's `submit_listing` tool call.
+  const saveListing = async ({ endCall = false } = {}) => {
+    if (saveState === 'saving') return
+    setSaveState('saving'); setSaveError(null)
+    try {
+      const token = await getIdToken?.()
+      if (!token) throw new Error('Sign in required to save a listing.')
+      const payload = {
+        ...listingRef.current,
+        source_call_id: callId,
+      }
+      const r = await fetch('/api/me/listings', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      })
+      const j = await r.json()
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`)
+      setSaveState('saved')
+      if (endCall) {
+        try { vapiRef.current?.stop() } catch {}
+      }
+    } catch (e) {
+      setSaveState('failed')
+      setSaveError(e.message)
+    }
   }
 
   // ---- Start / stop -----------------------------------------------------
@@ -357,6 +400,34 @@ export default function Call({ mode = 'support', onClose }) {
           {isHost && (
             <div className="callmodal-pane callmodal-form-pane">
               <ListingForm values={listing} onChange={onFieldChange} recentlyUpdated={recentField} />
+
+              <div className="listing-save">
+                {saveState === 'saved' ? (
+                  <>
+                    <p className="listing-save-ok">✓ Listing saved to your account.</p>
+                    <button className="btn btn-ghost btn-sm" onClick={onClose}>Done</button>
+                  </>
+                ) : (
+                  <>
+                    {saveState === 'failed' && saveError && (
+                      <p className="disclaimer-error" style={{ marginBottom: 8 }}>{saveError}</p>
+                    )}
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => saveListing()}
+                      disabled={!canSave || saveState === 'saving'}
+                      title={!canSave ? 'Address and nightly price required' : ''}
+                    >
+                      {saveState === 'saving' ? 'Saving…' : 'Save listing'}
+                    </button>
+                    {!canSave && (
+                      <p className="callmodal-hint" style={{ marginTop: 6 }}>
+                        Need at least a full address (with city + state) and a nightly price.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

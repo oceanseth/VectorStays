@@ -29,6 +29,12 @@ const SSM_BASE = process.env.SSM_BASE || '/bnbmesh/production'
 // Call IDs are 32-char hex (128 bits). Reject anything else immediately.
 const CALL_ID_RE = /^[a-f0-9]{32}$/
 
+function randomHex(bytes = 16) {
+  const arr = new Uint8Array(bytes)
+  crypto.getRandomValues(arr)
+  return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 // ---------------------------------------------------------------------------
 // Firebase ID token verification (modular, no firebase-admin SDK).
 // Verifies signature against Google's public certs, audience = projectId.
@@ -834,6 +840,63 @@ export const handler = async (event) => {
   if (path === '/api/me/listings' || path === '/me/listings') {
     const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
     if (!claims) return json(401, { error: 'sign in required' })
+
+    if (method === 'POST') {
+      // Create a new listing under the current host. Used by both the
+      // explicit "Save" button in the voice flow and the assistant's
+      // `submit_listing` tool call.
+      let body = {}
+      try {
+        body = event.body
+          ? (event.isBase64Encoded ? JSON.parse(Buffer.from(event.body, 'base64').toString()) : JSON.parse(event.body))
+          : {}
+      } catch { return json(400, { error: 'bad json' }) }
+
+      const addr = (body.address || '').trim()
+      if (!addr) return json(400, { error: 'address is required' })
+      // Soft-check for "city, state" — at least a comma + something with a
+      // 2-3 letter or state-name fragment afterwards. Agent should already
+      // catch this but server enforces too.
+      if (!/,\s*[A-Za-z]{2,}/.test(addr)) {
+        return json(400, { error: 'address looks incomplete — include city and state (e.g. "123 Main St, Santa Barbara, CA")' })
+      }
+      if (!body.nightlyPrice || Number(body.nightlyPrice) <= 0) {
+        return json(400, { error: 'nightlyPrice is required' })
+      }
+
+      const c = await redis()
+      if (!c) return json(503, { error: 'storage not configured' })
+
+      const id = body.source_call_id || randomHex(16)
+      const listing = {
+        id,
+        host_uid: claims.sub,
+        address:       addr,
+        title:         (body.title || '').trim() || null,
+        description:   body.description || null,
+        propertyType:  body.propertyType || null,
+        bedrooms:      body.bedrooms ?? null,
+        bathrooms:     body.bathrooms ?? null,
+        maxGuests:     body.maxGuests ?? null,
+        amenities:     Array.isArray(body.amenities) ? body.amenities : [],
+        nightlyPrice:  Number(body.nightlyPrice),
+        cleaningFee:   body.cleaningFee != null ? Number(body.cleaningFee) : null,
+        minNights:     body.minNights ?? null,
+        checkIn:       body.checkIn || null,
+        checkOut:      body.checkOut || null,
+        houseRules:    body.houseRules || null,
+        source_call_id: body.source_call_id || null,
+        customer_support_enabled: false,
+        submitted_at:  new Date().toISOString(),
+      }
+      await c.set(`bnbmesh:listing:${id}`, JSON.stringify(listing))
+      await c.sAdd('bnbmesh:listings:index', id)
+      await c.sAdd(`bnbmesh:host:${claims.sub}:listings`, id)
+      await c.expire(`bnbmesh:listing:${id}`, 365 * 24 * 3600)
+      return json(200, { ok: true, listing })
+    }
+
+    // GET — list mine
     const c = await redis()
     if (!c) return json(200, { listings: [] })
     const ids = await c.sMembers(`bnbmesh:host:${claims.sub}:listings`).catch(() => [])

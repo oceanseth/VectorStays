@@ -461,6 +461,17 @@ section { scroll-margin-top: 24px; }
 }
 .listing-field textarea { resize: vertical; min-height: 60px; }
 
+.listing-save {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--card-border);
+}
+.listing-save-ok {
+  color: var(--accent);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
 /* ---------- Disclaimer popup ---------- */
 
 .disclaimer-backdrop {
