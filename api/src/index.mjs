@@ -842,9 +842,9 @@ export const handler = async (event) => {
     if (!claims) return json(401, { error: 'sign in required' })
 
     if (method === 'POST') {
-      // Create a new listing under the current host. Used by both the
-      // explicit "Save" button in the voice flow and the assistant's
-      // `submit_listing` tool call.
+      // Create or upsert a listing under the current host.
+      // Partial saves are allowed — listings start as 'draft' and can be
+      // activated later from the dashboard once required fields are present.
       let body = {}
       try {
         body = event.body
@@ -852,43 +852,58 @@ export const handler = async (event) => {
           : {}
       } catch { return json(400, { error: 'bad json' }) }
 
-      const addr = (body.address || '').trim()
-      if (!addr) return json(400, { error: 'address is required' })
-      // Soft-check for "city, state" — at least a comma + something with a
-      // 2-3 letter or state-name fragment afterwards. Agent should already
-      // catch this but server enforces too.
-      if (!/,\s*[A-Za-z]{2,}/.test(addr)) {
-        return json(400, { error: 'address looks incomplete — include city and state (e.g. "123 Main St, Santa Barbara, CA")' })
-      }
-      if (!body.nightlyPrice || Number(body.nightlyPrice) <= 0) {
-        return json(400, { error: 'nightlyPrice is required' })
-      }
-
       const c = await redis()
       if (!c) return json(503, { error: 'storage not configured' })
 
-      const id = body.source_call_id || randomHex(16)
+      const id = body.source_call_id || body.id || randomHex(16)
+      // Idempotent upsert: preserve fields we don't want a save to clobber.
+      let existing = null
+      try {
+        const raw = await c.get(`bnbmesh:listing:${id}`)
+        if (raw) existing = JSON.parse(raw)
+      } catch {}
+      if (existing && existing.host_uid && existing.host_uid !== claims.sub) {
+        return json(403, { error: 'this listing belongs to another host' })
+      }
+
+      const addr = (body.address || '').trim() || null
+      const price = body.nightlyPrice != null && body.nightlyPrice !== '' ? Number(body.nightlyPrice) : null
+
       const listing = {
+        // existing fields take lowest priority — body wins where provided
+        ...(existing || {}),
         id,
         host_uid: claims.sub,
-        address:       addr,
-        title:         (body.title || '').trim() || null,
-        description:   body.description || null,
-        propertyType:  body.propertyType || null,
-        bedrooms:      body.bedrooms ?? null,
-        bathrooms:     body.bathrooms ?? null,
-        maxGuests:     body.maxGuests ?? null,
-        amenities:     Array.isArray(body.amenities) ? body.amenities : [],
-        nightlyPrice:  Number(body.nightlyPrice),
-        cleaningFee:   body.cleaningFee != null ? Number(body.cleaningFee) : null,
-        minNights:     body.minNights ?? null,
-        checkIn:       body.checkIn || null,
-        checkOut:      body.checkOut || null,
-        houseRules:    body.houseRules || null,
-        source_call_id: body.source_call_id || null,
-        customer_support_enabled: false,
-        submitted_at:  new Date().toISOString(),
+        address:       addr ?? existing?.address ?? null,
+        title:         (body.title || '').trim() || existing?.title || null,
+        description:   body.description ?? existing?.description ?? null,
+        propertyType:  body.propertyType ?? existing?.propertyType ?? null,
+        bedrooms:      body.bedrooms ?? existing?.bedrooms ?? null,
+        bathrooms:     body.bathrooms ?? existing?.bathrooms ?? null,
+        maxGuests:     body.maxGuests ?? existing?.maxGuests ?? null,
+        amenities:     Array.isArray(body.amenities) ? body.amenities : (existing?.amenities || []),
+        nightlyPrice:  price ?? existing?.nightlyPrice ?? null,
+        cleaningFee:   body.cleaningFee != null && body.cleaningFee !== '' ? Number(body.cleaningFee) : (existing?.cleaningFee ?? null),
+        minNights:     body.minNights ?? existing?.minNights ?? null,
+        checkIn:       body.checkIn ?? existing?.checkIn ?? null,
+        checkOut:      body.checkOut ?? existing?.checkOut ?? null,
+        houseRules:    body.houseRules ?? existing?.houseRules ?? null,
+        source_call_id: body.source_call_id || existing?.source_call_id || null,
+        customer_support_enabled: existing?.customer_support_enabled ?? false,
+        status:        existing?.status ?? 'draft',
+        submitted_at:  existing?.submitted_at ?? new Date().toISOString(),
+        updated_at:    new Date().toISOString(),
       }
+      // Compute completeness: address looks like "street, city, state" + nightly price.
+      const addressLooksComplete = !!(listing.address && /,\s*[A-Za-z]{2,}/.test(listing.address))
+      listing.is_complete = !!(addressLooksComplete && listing.nightlyPrice && listing.nightlyPrice > 0)
+
+      // If a previously-active listing becomes incomplete (e.g. user blanked
+      // the address), drop it back to draft.
+      if (listing.status === 'active' && !listing.is_complete) {
+        listing.status = 'draft'
+      }
+
       await c.set(`bnbmesh:listing:${id}`, JSON.stringify(listing))
       await c.sAdd('bnbmesh:listings:index', id)
       await c.sAdd(`bnbmesh:host:${claims.sub}:listings`, id)
@@ -908,6 +923,35 @@ export const handler = async (event) => {
       } catch {}
     }
     return json(200, { listings })
+  }
+
+  // ---- Per-listing activate / deactivate --------------------------------
+  const listingActionMatch = path.match(/^\/api\/me\/listings\/([A-Za-z0-9_-]+)\/(activate|deactivate)$/)
+  if (listingActionMatch) {
+    if (method !== 'POST') return json(405, { error: 'method not allowed' })
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!claims) return json(401, { error: 'sign in required' })
+    const [, listingId, action] = listingActionMatch
+    const c = await redis()
+    if (!c) return json(503, { error: 'storage not configured' })
+    const raw = await c.get(`bnbmesh:listing:${listingId}`)
+    if (!raw) return json(404, { error: 'listing not found' })
+    const listing = JSON.parse(raw)
+    if (listing.host_uid && listing.host_uid !== claims.sub) {
+      return json(403, { error: 'not your listing' })
+    }
+    if (action === 'activate') {
+      if (!listing.is_complete) {
+        return json(400, { error: 'listing is incomplete — add a full address (street, city, state) and a nightly price before activating' })
+      }
+      listing.status = 'active'
+      listing.activated_at = new Date().toISOString()
+    } else {
+      listing.status = 'inactive'
+      listing.deactivated_at = new Date().toISOString()
+    }
+    await c.set(`bnbmesh:listing:${listingId}`, JSON.stringify(listing))
+    return json(200, { ok: true, listing })
   }
 
   // ---- Stripe checkout: enable AI customer support for one listing ------
@@ -937,6 +981,9 @@ export const handler = async (event) => {
     try { listing = JSON.parse(raw) } catch { return json(500, { error: 'corrupt listing' }) }
     if (listing.host_uid && listing.host_uid !== claims.sub) {
       return json(403, { error: 'this listing is not yours' })
+    }
+    if (listing.status !== 'active') {
+      return json(400, { error: 'listing must be active before enabling customer support — activate it first' })
     }
     if (listing.customer_support_enabled) {
       return json(409, { error: 'AI customer support is already active on this listing' })

@@ -267,7 +267,12 @@ export default function Call({ mode = 'support', onClose }) {
     if (saveState === 'saved') setSaveState('idle') // edits invalidate the saved state
   }
 
-  const canSave = isHost && !!listingRef.current?.address && !!listingRef.current?.nightlyPrice
+  // Allow saving anything — drafts are valid. The dashboard will gate
+  // activation/customer-support on completeness server-side.
+  const hasAnyField = isHost && Object.values(listingRef.current || {}).some(
+    (v) => v !== '' && v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0),
+  )
+  const canSave = hasAnyField
 
   // Save the current listing under the host's account. Used both by the
   // explicit "Save" button and the agent's `submit_listing` tool call.
@@ -402,31 +407,24 @@ export default function Call({ mode = 'support', onClose }) {
               <ListingForm values={listing} onChange={onFieldChange} recentlyUpdated={recentField} />
 
               <div className="listing-save">
-                {saveState === 'saved' ? (
-                  <>
-                    <p className="listing-save-ok">✓ Listing saved to your account.</p>
-                    <button className="btn btn-ghost btn-sm" onClick={onClose}>Done</button>
-                  </>
-                ) : (
-                  <>
-                    {saveState === 'failed' && saveError && (
-                      <p className="disclaimer-error" style={{ marginBottom: 8 }}>{saveError}</p>
-                    )}
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => saveListing()}
-                      disabled={!canSave || saveState === 'saving'}
-                      title={!canSave ? 'Address and nightly price required' : ''}
-                    >
-                      {saveState === 'saving' ? 'Saving…' : 'Save listing'}
-                    </button>
-                    {!canSave && (
-                      <p className="callmodal-hint" style={{ marginTop: 6 }}>
-                        Need at least a full address (with city + state) and a nightly price.
-                      </p>
-                    )}
-                  </>
+                {saveState === 'failed' && saveError && (
+                  <p className="disclaimer-error" style={{ marginBottom: 8 }}>{saveError}</p>
                 )}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => saveListing()}
+                    disabled={!canSave || saveState === 'saving'}
+                    title={!canSave ? 'Add at least one field' : 'Save as draft if incomplete'}
+                  >
+                    {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? '✓ Saved · Save again' : 'Save listing'}
+                  </button>
+                  {saveState === 'saved' && (
+                    <span className="callmodal-hint" style={{ flex: 1 }}>
+                      Saved as draft. Activate it from your dashboard once it's complete.
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}
