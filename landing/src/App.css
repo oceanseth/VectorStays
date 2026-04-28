@@ -614,6 +614,31 @@ section { scroll-margin-top: 24px; }
 }
 .admin-table tr:last-child td { border-bottom: 0; }
 .admin-table a { color: var(--accent); }
+
+/* ---------- Listings dashboard ---------- */
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.listing-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 0.15s ease;
+}
+.listing-card:hover { border-color: rgba(92,235,213,0.3); }
+.listing-card-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.listing-card-head h4 {
+  margin: 0; font-size: 1rem; letter-spacing: -0.01em;
+}
+.listing-card-meta { color: var(--fg-muted); font-size: 0.88rem; margin: 0; }
+.listing-card-actions { margin-top: auto; padding-top: 6px; }
 .callmodal-head {
   display: flex; justify-content: space-between; align-items: center;
   padding: 18px 22px; border-bottom: 1px solid var(--card-border);

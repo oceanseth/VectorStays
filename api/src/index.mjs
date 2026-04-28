@@ -708,12 +708,21 @@ export const handler = async (event) => {
     }
 
     if (method === 'POST' && sub === 'start') {
+      // If a host call is started by an authenticated user, capture their UID
+      // so the resulting listing lands under their account, not the public
+      // "anonymous listings" pool.
+      let hostUid = null
+      if (body?.mode === 'host') {
+        const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+        if (claims?.sub) hostUid = claims.sub
+      }
       const meta = {
         id,
         mode:        body?.mode || 'support',
         status:      'in_progress',
         started_at:  body?.started_at || new Date().toISOString(),
         vapi_call_id: body?.vapi_call_id || null,
+        host_uid:    hostUid,
       }
       await redisSetEx(metaKey, 7 * 24 * 3600, meta)
       return json(200, { ok: true, meta })
@@ -736,19 +745,24 @@ export const handler = async (event) => {
       await redisSetEx(metaKey, 7 * 24 * 3600, meta)
 
       // If this was a host onboarding call, persist the captured listing.
-      // We require enough fields to be useful (address + title or price).
+      // We require enough fields to be useful (address or title, and price).
       if (meta.mode === 'host' && body?.listing && (body.listing.address || body.listing.title) && body.listing.nightlyPrice) {
         const listing = {
           ...body.listing,
           id,
           submitted_at: new Date().toISOString(),
           source_call_id: id,
+          host_uid: meta.host_uid || null,
+          customer_support_enabled: false,
         }
         const c = await redis()
         if (c) {
           await c.set(`bnbmesh:listing:${id}`, JSON.stringify(listing))
           await c.sAdd('bnbmesh:listings:index', id)
-          // Long TTL — these are user-submitted, not transient.
+          // Add to the host's per-account index so their dashboard shows it.
+          if (meta.host_uid) {
+            await c.sAdd(`bnbmesh:host:${meta.host_uid}:listings`, id)
+          }
           await c.expire(`bnbmesh:listing:${id}`, 90 * 24 * 3600)
         }
       }
@@ -816,15 +830,57 @@ export const handler = async (event) => {
     return json(200, { hosts })
   }
 
-  // ---- Stripe checkout ---------------------------------------------------
-  // POST /api/billing/checkout — auth'd. Returns { url } if Stripe configured.
+  // ---- Listings I own (auth'd) ------------------------------------------
+  if (path === '/api/me/listings' || path === '/me/listings') {
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!claims) return json(401, { error: 'sign in required' })
+    const c = await redis()
+    if (!c) return json(200, { listings: [] })
+    const ids = await c.sMembers(`bnbmesh:host:${claims.sub}:listings`).catch(() => [])
+    const listings = []
+    for (const id of ids) {
+      try {
+        const v = await c.get(`bnbmesh:listing:${id}`)
+        if (v) listings.push(JSON.parse(v))
+      } catch {}
+    }
+    return json(200, { listings })
+  }
+
+  // ---- Stripe checkout: enable AI customer support for one listing ------
+  // POST /api/billing/checkout { listing_id }
   if (path === '/api/billing/checkout' || path === '/billing/checkout') {
     if (method !== 'POST') return json(405, { error: 'method not allowed' })
     const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
     if (!claims) return json(401, { error: 'sign in required' })
 
+    let body = {}
+    try {
+      body = event.body
+        ? (event.isBase64Encoded ? JSON.parse(Buffer.from(event.body, 'base64').toString()) : JSON.parse(event.body))
+        : {}
+    } catch { return json(400, { error: 'bad json' }) }
+
+    const listingId = body?.listing_id
+    if (!listingId) return json(400, { error: 'listing_id is required' })
+
+    // Make sure the listing exists and belongs to this host before letting
+    // them subscribe on its behalf.
+    const c = await redis()
+    if (!c) return json(503, { error: 'storage not configured' })
+    const raw = await c.get(`bnbmesh:listing:${listingId}`)
+    if (!raw) return json(404, { error: 'listing not found' })
+    let listing
+    try { listing = JSON.parse(raw) } catch { return json(500, { error: 'corrupt listing' }) }
+    if (listing.host_uid && listing.host_uid !== claims.sub) {
+      return json(403, { error: 'this listing is not yours' })
+    }
+    if (listing.customer_support_enabled) {
+      return json(409, { error: 'AI customer support is already active on this listing' })
+    }
+
     const sk = await ssmGet(`${SSM_BASE}/stripe_secret_key`)
-    const priceId = await ssmGet(`${SSM_BASE}/stripe_price_id`, false)
+    const priceId = await ssmGet(`${SSM_BASE}/stripe_price_id`)
     if (!sk || !priceId) {
       return json(503, { error: 'Stripe not configured yet — admin needs to set SSM params.' })
     }
@@ -837,11 +893,15 @@ export const handler = async (event) => {
     params.set('line_items[0][quantity]', '1')
     params.set('client_reference_id', claims.sub)
     if (claims.email) params.set('customer_email', claims.email)
-    params.set('success_url', `${origin}/?host_signup=success`)
-    params.set('cancel_url',  `${origin}/?host_signup=cancel`)
+    params.set('success_url', `${origin}/#dashboard?support=enabled&listing=${encodeURIComponent(listingId)}`)
+    params.set('cancel_url',  `${origin}/#dashboard?support=cancel`)
     params.set('metadata[firebase_uid]', claims.sub)
+    params.set('metadata[listing_id]', listingId)
     if (claims.email) params.set('metadata[firebase_email]', claims.email)
     if (claims.phone_number) params.set('metadata[firebase_phone]', claims.phone_number)
+    // Subscription-level metadata too, so future renewal/update events carry it.
+    params.set('subscription_data[metadata][firebase_uid]', claims.sub)
+    params.set('subscription_data[metadata][listing_id]', listingId)
 
     try {
       const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
@@ -858,21 +918,18 @@ export const handler = async (event) => {
         return json(502, { error: data?.error?.message || 'stripe error' })
       }
 
-      // Pre-create the host record in pending state so admin sees them even if
-      // the webhook is delayed.
-      const c = await redis()
-      if (c) {
-        const host = {
-          uid: claims.sub,
-          email: claims.email || null,
-          phone: claims.phone_number || null,
-          status: 'checkout_started',
-          created_at: new Date().toISOString(),
-          stripe_session_id: data.id,
-        }
-        await c.set(`bnbmesh:host:${claims.sub}`, JSON.stringify(host))
-        await c.sAdd('bnbmesh:hosts:index', claims.sub)
+      // Track that the host has at least started a checkout (admin visibility).
+      const host = (await redisGet(`bnbmesh:host:${claims.sub}`)) || {
+        uid: claims.sub,
+        email: claims.email || null,
+        phone: claims.phone_number || null,
+        created_at: new Date().toISOString(),
       }
+      host.last_checkout_session_id = data.id
+      host.last_checkout_listing_id = listingId
+      host.last_checkout_started_at = new Date().toISOString()
+      await c.set(`bnbmesh:host:${claims.sub}`, JSON.stringify(host))
+      await c.sAdd('bnbmesh:hosts:index', claims.sub)
 
       return json(200, { url: data.url, session_id: data.id })
     } catch (e) {
@@ -920,6 +977,8 @@ export const handler = async (event) => {
     if (uid) {
       const c = await redis()
       if (c) {
+        // listing_id is on either the session metadata or the subscription metadata
+        const listingId = obj.metadata?.listing_id || null
         const existing = await redisGet(`bnbmesh:host:${uid}`) || {}
         const host = { ...existing, uid }
         if (evt.type === 'checkout.session.completed') {
@@ -935,6 +994,28 @@ export const handler = async (event) => {
         }
         await c.set(`bnbmesh:host:${uid}`, JSON.stringify(host))
         await c.sAdd('bnbmesh:hosts:index', uid)
+
+        // Flip the listing's customer_support_enabled flag based on the event.
+        if (listingId) {
+          const lraw = await c.get(`bnbmesh:listing:${listingId}`)
+          if (lraw) {
+            try {
+              const listing = JSON.parse(lraw)
+              if (evt.type === 'checkout.session.completed' || evt.type === 'customer.subscription.updated') {
+                const stillActive = (evt.type === 'checkout.session.completed')
+                  ? true
+                  : (obj.status === 'active' || obj.status === 'trialing')
+                listing.customer_support_enabled = stillActive
+                listing.stripe_subscription_id = obj.subscription || obj.id || listing.stripe_subscription_id
+                listing.support_updated_at = new Date().toISOString()
+              } else if (evt.type === 'customer.subscription.deleted') {
+                listing.customer_support_enabled = false
+                listing.support_canceled_at = new Date().toISOString()
+              }
+              await c.set(`bnbmesh:listing:${listingId}`, JSON.stringify(listing))
+            } catch (e) { console.warn('listing update failed', e.message) }
+          }
+        }
       }
     }
     return json(200, { received: true })

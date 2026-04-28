@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './AuthContext'
 import SignInModal from './SignInModal'
 import HostSignup from './HostSignup'
 import Admin from './Admin'
+import Dashboard from './Dashboard'
 import './App.css'
 
 const MCP_URL = 'https://bnbmesh.ai/api/mcp'
@@ -65,8 +66,8 @@ function Nav({ onTalk, onHost, onSignIn }) {
             </button>
             {menuOpen && (
               <div className="user-menu-dropdown" onMouseLeave={() => setMenuOpen(false)}>
+                <a href="#dashboard" onClick={() => setMenuOpen(false)}>My listings</a>
                 {isAdmin && <a href="#admin" onClick={() => setMenuOpen(false)}>Admin</a>}
-                <a href="#become-host" onClick={() => setMenuOpen(false)}>Become a Host</a>
                 <button onClick={() => { setMenuOpen(false); signOut() }}>Sign out</button>
               </div>
             )}
@@ -320,6 +321,7 @@ function AppShell() {
       const m = h.match(/^#call-([a-f0-9]{32})$/)
       setViewCallId(m ? m[1] : null)
       if (h === '#admin') setRoute('admin')
+      else if (h === '#dashboard') setRoute('dashboard')
       else if (h === '#become-host') setRoute('become-host')
       else setRoute('home')
     }
@@ -333,6 +335,14 @@ function AppShell() {
   }
   if (route === 'admin') {
     return <Admin />
+  }
+  if (route === 'dashboard') {
+    return (
+      <>
+        <Dashboard onAddListing={() => setCallMode('host')} />
+        {callMode && <Call mode={callMode} onClose={() => setCallMode(null)} />}
+      </>
+    )
   }
 
   const closeBecomeHost = () => { if (window.location.hash === '#become-host') window.location.hash = '' }

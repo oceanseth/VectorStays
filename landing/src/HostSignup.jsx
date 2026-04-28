@@ -3,99 +3,71 @@ import { useAuth } from './AuthContext'
 import SignInModal from './SignInModal'
 
 /**
- * "Sign up your Airbnb" pricing pitch + Stripe checkout.
- *
- * Pricing model: $20/month for AI guest support — hosts integrate their
- * listings/reservations, guests call the SHARED BnBMesh support number, and
- * the agent matches the caller's number to a reservation to know which host
- * + listing they belong to. Hosts get SMS'd when a human is needed.
+ * "Get started as a host" — free signup. Once signed in, the visitor lands
+ * on /#dashboard where they can add listings and (optionally) enable
+ * customer support per listing for $20/mo each.
  */
 export default function HostSignup({ onClose }) {
-  const { user, getIdToken } = useAuth()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(null)
+  const { user } = useAuth()
   const [showSignIn, setShowSignIn] = useState(false)
 
-  const startCheckout = async () => {
+  const proceed = () => {
     if (!user) { setShowSignIn(true); return }
-    setBusy(true); setError(null)
-    try {
-      const token = await getIdToken()
-      const r = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-        body: JSON.stringify({ plan: 'host_monthly_20' }),
-      })
-      const j = await r.json()
-      if (j.url) {
-        window.location.href = j.url
-      } else if (j.error) {
-        setError(j.error)
-      } else {
-        setError('Could not start checkout — Stripe may not be configured yet.')
-      }
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setBusy(false)
-    }
+    window.location.hash = '#dashboard'
+    onClose?.()
   }
 
   return (
     <div className="callmodal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose?.() }}>
       <div className="callmodal" style={{ maxWidth: 560 }}>
         <div className="callmodal-head">
-          <h3>Connect your Airbnb to BnBMesh</h3>
+          <h3>Host on BnBMesh</h3>
           <button className="callmodal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
 
         <div className="callmodal-body">
           <div className="hostsignup-price">
-            <span className="hostsignup-amount">$20</span>
-            <span className="hostsignup-period">/ month</span>
+            <span className="hostsignup-amount">Free</span>
+            <span className="hostsignup-period">to host</span>
           </div>
+
+          <p className="callmodal-hint" style={{ marginTop: 0, marginBottom: 18 }}>
+            Add your listings, sync your reservations, manage everything in one place. No setup fee, no monthly minimum.
+          </p>
 
           <ul className="hostsignup-features">
             <li>
-              <strong>Shared support line.</strong> Your guests call BnBMesh's
-              number; our AI agent identifies them by phone, looks up which
-              listing + reservation they're on, and handles the conversation.
+              <strong>Free hosting.</strong> List your places, sync from Guesty/Hospitable/etc., or upload a CSV. We don't take a cut.
             </li>
             <li>
-              <strong>SMS notifications.</strong> If the caller asks for
-              something the agent can't resolve, you get a text with a link
-              to join the live call from anywhere.
+              <strong>Optional add-on: AI Customer Support — <em>$20/month per listing</em>.</strong>
+              Your guests call BnBMesh's shared support number; our AI agent identifies them, checks the reservation, and handles the call. You only pay for the listings you turn it on for.
             </li>
             <li>
-              <strong>Reservation sync.</strong> Connect Guesty, Hospitable,
-              OwnerRez, or upload a CSV. We match incoming caller phone
-              numbers against your guest records.
-            </li>
-            <li>
-              <strong>Cancel anytime.</strong> No setup fee, no contract.
+              <strong>Cancel any time, per listing.</strong> Toggle support on for a busy season, off in the off-season.
             </li>
           </ul>
 
-          <p className="callmodal-hint" style={{ marginTop: 16 }}>
-            Cards processed by Stripe. We never see card details.
-          </p>
-
-          {error && <p className="disclaimer-error">{error}</p>}
-
-          <div className="callmodal-actions">
-            <button className="btn btn-primary callmodal-cta" onClick={startCheckout} disabled={busy}>
-              {busy ? 'Starting…' : (user ? 'Subscribe — $20/month' : 'Sign in to subscribe')}
-            </button>
-          </div>
-
           {user && (
-            <p className="callmodal-hint" style={{ marginTop: 10 }}>
+            <p className="callmodal-hint" style={{ marginTop: 14 }}>
               Signed in as <code>{user.email || user.phoneNumber || user.uid}</code>.
             </p>
           )}
+
+          <div className="callmodal-actions">
+            <button className="btn btn-primary callmodal-cta" onClick={proceed}>
+              {user ? 'Go to dashboard →' : 'Sign in to get started'}
+            </button>
+          </div>
         </div>
 
-        {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
+        {showSignIn && (
+          <SignInModal onClose={() => {
+            setShowSignIn(false)
+            // After sign-in succeeds, AuthContext will rerender with user set;
+            // we just close the SignInModal and the user can click "Go to dashboard".
+          }} />
+        )}
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAuth } from './AuthContext'
 import VapiSDK from '@vapi-ai/web'
 // @vapi-ai/web ships as CJS with `exports.default = Vapi`. Depending on
 // whether Vite hoists this through esbuild (dev) or Rollup (build), the
@@ -149,6 +150,7 @@ function ListingForm({ values, onChange, recentlyUpdated }) {
 // ---------------------------------------------------------------------------
 
 export default function Call({ mode = 'support', onClose }) {
+  const { getIdToken } = useAuth()
   const [status, setStatus] = useState('idle') // idle | connecting | live | ended | error
   const [transcript, setTranscript] = useState([])
   const [callId] = useState(makeCallId)
@@ -167,11 +169,20 @@ export default function Call({ mode = 'support', onClose }) {
     const vapi = new Vapi(VAPI_PUBLIC_KEY)
     vapiRef.current = vapi
 
-    vapi.on('call-start', () => {
+    vapi.on('call-start', async () => {
       setStatus('live')
+      const headers = { 'content-type': 'application/json' }
+      // For host onboarding calls, attach the user's ID token so the listing
+      // gets saved under their account.
+      if (isHost) {
+        try {
+          const token = await getIdToken?.()
+          if (token) headers.authorization = `Bearer ${token}`
+        } catch {}
+      }
       fetch(`/api/calls/${callId}/start`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers,
         body: JSON.stringify({ mode, started_at: new Date().toISOString() }),
       }).catch(() => {})
     })

@@ -20,7 +20,11 @@ export TF_VAR_stripe_secret_key="$(ssm_get "$SSM_BASE/stripe_secret_key")"
 export TF_VAR_stripe_price_id="$(ssm_get "$SSM_BASE/stripe_price_id")"
 export TF_VAR_stripe_webhook_secret="$(ssm_get "$SSM_BASE/stripe_webhook_secret")"
 
-echo "loaded SSM:"
-echo "  stripe_secret_key:     $([ -n "$TF_VAR_stripe_secret_key" ] && echo set || echo MISSING)"
-echo "  stripe_price_id:       $([ -n "$TF_VAR_stripe_price_id" ] && echo "$TF_VAR_stripe_price_id" || echo MISSING)"
-echo "  stripe_webhook_secret: $([ -n "$TF_VAR_stripe_webhook_secret" ] && echo set || echo MISSING)"
+# Status to stderr so `source load-ssm.sh | <pipe>` doesn't silently
+# swallow the exports in a subshell.
+{
+  echo "loaded SSM:"
+  echo "  stripe_secret_key:     $([ -n "$TF_VAR_stripe_secret_key" ] && echo set || echo MISSING)"
+  echo "  stripe_price_id:       $([ -n "$TF_VAR_stripe_price_id" ] && echo "$TF_VAR_stripe_price_id" || echo MISSING)"
+  echo "  stripe_webhook_secret: $([ -n "$TF_VAR_stripe_webhook_secret" ] && echo set || echo MISSING)"
+} >&2
