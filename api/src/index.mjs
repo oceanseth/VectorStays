@@ -900,6 +900,23 @@ export const handler = async (event) => {
 
     const obj = evt.data?.object || {}
     const uid = obj.metadata?.firebase_uid || obj.client_reference_id
+
+    // Belt-and-suspenders: this Stripe account is shared with other products
+    // (voicecert, etc.). Webhook endpoints receive events for the whole
+    // account, so we must filter to events that look like ours. We accept an
+    // event if it carries our firebase_uid metadata OR references our price.
+    const ourPrice = process.env.STRIPE_PRICE_ID
+    const eventPriceId =
+      obj?.items?.data?.[0]?.price?.id ||           // subscription objects
+      obj?.lines?.data?.[0]?.price?.id ||           // invoice objects
+      obj?.line_items?.data?.[0]?.price?.id ||      // checkout.session.completed
+      null
+    const isOurEvent = !!uid || (ourPrice && eventPriceId === ourPrice)
+    if (!isOurEvent) {
+      // Quietly 200 so Stripe doesn't retry; this event belongs to a sibling product.
+      return json(200, { received: true, ignored: true })
+    }
+
     if (uid) {
       const c = await redis()
       if (c) {

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f1524"/>
+      <stop offset="1" stop-color="#080b13"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="512" cy="380" r="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5cebd5" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#5cebd5" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#5cebd5" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="brand" x1="320" y1="280" x2="704" y2="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5cebd5"/>
+      <stop offset="1" stop-color="#b88bff"/>
+    </linearGradient>
+    <linearGradient id="wordgrad" x1="220" y1="640" x2="804" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e8ecf5"/>
+      <stop offset="1" stop-color="#b88bff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <!-- Faint mesh backdrop pattern -->
+  <g stroke="#5cebd5" stroke-opacity="0.05" stroke-width="1.5" fill="none">
+    <path d="M0 880 q64 -28 128 0 t128 0 t128 0 t128 0 t128 0 t128 0 t128 0 t128 0"/>
+    <path d="M0 920 q64 28 128 0 t128 0 t128 0 t128 0 t128 0 t128 0 t128 0 t128 0"/>
+    <path d="M0 960 q64 -28 128 0 t128 0 t128 0 t128 0 t128 0 t128 0 t128 0 t128 0"/>
+  </g>
+
+  <!-- Logo: house with woven mesh, scaled up -->
+  <g transform="translate(512 380)">
+    <g transform="translate(-180 -180) scale(5.625)">
+      <path d="M32 6 L57 28 V52 a4 4 0 0 1 -4 4 H11 a4 4 0 0 1 -4 -4 V28 Z"
+            stroke="url(#brand)" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+      <path d="M14 36 q4.5 -3.5 9 0 t9 0 t9 0 t9 0"
+            stroke="url(#brand)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      <path d="M14 42 q4.5 3.5 9 0 t9 0 t9 0 t9 0"
+            stroke="url(#brand)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      <path d="M14 48 q4.5 -3.5 9 0 t9 0 t9 0 t9 0"
+            stroke="url(#brand)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Wordmark "bnbmesh" -->
+  <text x="512" y="700" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-weight="700" font-size="116" letter-spacing="-3"
+        fill="url(#wordgrad)">bnbmesh</text>
+
+  <!-- Subtitle "Customer Support" -->
+  <text x="512" y="780" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-weight="500" font-size="46" letter-spacing="2"
+        fill="#9aa4b8">Customer Support</text>
+
+  <!-- Tagline strip -->
+  <text x="512" y="868" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-weight="500" font-size="26" letter-spacing="6"
+        fill="#5cebd5" opacity="0.85">AGENTIC · ALWAYS ON · FOR HOSTS</text>
+</svg>
