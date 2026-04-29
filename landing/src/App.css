@@ -127,6 +127,18 @@ code {
 
 .hero-inner { max-width: 780px; }
 
+.hero-video {
+  width: 100%;
+  max-width: 760px;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: var(--bg-2);
+  display: block;
+  margin: 0 0 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 60px rgba(92,235,213,0.06);
+}
+
 .hero-kicker {
   color: var(--accent);
   font-weight: 600;

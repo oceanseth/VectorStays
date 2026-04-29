@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>BnBMesh — Intro</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1920px; height: 1080px;
+        overflow: hidden;
+        background: radial-gradient(ellipse at center top, #0f1524 0%, #080b13 70%);
+        font-family: "Inter", system-ui, sans-serif;
+        color: #e8ecf5;
+        -webkit-font-smoothing: antialiased;
+      }
+      .scene {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        flex-direction: column;
+      }
+      .grad {
+        background: linear-gradient(135deg, #5cebd5, #b88bff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      /* Background mesh waves (subtle, always on) */
+      .bg-mesh {
+        position: absolute; inset: 0; pointer-events: none;
+        opacity: 0.07;
+      }
+      .bg-mesh path { fill: none; stroke: #5cebd5; stroke-width: 2; }
+
+      /* ====== Scene 1: Hero / Logo ====== */
+      .hero-logo { width: 220px; height: 220px; }
+      .hero-logo path, .hero-logo circle { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+      .hero-house { stroke: url(#brandGrad); stroke-width: 5; stroke-dasharray: 600; stroke-dashoffset: 600; }
+      .hero-wave { stroke: url(#brandGrad); stroke-width: 4; stroke-dasharray: 200; stroke-dashoffset: 200; }
+      .hero-wordmark {
+        font-size: 128px; font-weight: 800; letter-spacing: -0.04em;
+        margin-top: 24px; opacity: 0;
+      }
+      .hero-tagline {
+        margin-top: 14px; font-size: 36px; font-weight: 500;
+        color: #9aa4b8; letter-spacing: 0.02em;
+        opacity: 0;
+      }
+
+      /* ====== Common scene title bar ====== */
+      .scene-kicker {
+        position: absolute; top: 80px; left: 0; right: 0;
+        text-align: center;
+        font-size: 24px; font-weight: 700;
+        letter-spacing: 0.32em; text-transform: uppercase;
+        color: #5cebd5;
+        opacity: 0;
+      }
+      .scene-headline {
+        font-size: 92px; font-weight: 800; letter-spacing: -0.025em;
+        line-height: 1.05; text-align: center; max-width: 1500px;
+        opacity: 0;
+      }
+      .scene-sub {
+        margin-top: 28px; font-size: 32px; font-weight: 500;
+        color: #9aa4b8; max-width: 1200px; text-align: center;
+        line-height: 1.4; opacity: 0;
+      }
+
+      /* ====== Scene 2: Hosts — platform logos converging ====== */
+      .platforms {
+        position: relative; width: 1200px; height: 380px;
+        margin-top: 60px;
+      }
+      .platform {
+        position: absolute;
+        padding: 20px 36px; border-radius: 999px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        font-size: 30px; font-weight: 600;
+        color: #e8ecf5;
+        opacity: 0;
+      }
+      .hub {
+        position: absolute; left: 50%; top: 50%;
+        transform: translate(-50%, -50%) scale(0.4);
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(92,235,213,0.28), transparent 70%);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0;
+      }
+      .hub-inner {
+        width: 130px; height: 130px;
+      }
+      .hub-inner path { fill: none; stroke: url(#brandGrad); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+
+      .conn-svg { position: absolute; inset: 0; pointer-events: none; }
+      .conn-line {
+        fill: none; stroke: url(#brandGrad); stroke-width: 2.5;
+        stroke-dasharray: 6 8;
+        stroke-dashoffset: 600;
+      }
+
+      /* ====== Scene 3: Guests — price comparison cards ====== */
+      .price-row {
+        display: flex; gap: 26px; margin-top: 60px;
+      }
+      .price-card {
+        width: 320px; padding: 30px 28px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 18px;
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      .price-card .platform-name {
+        font-size: 18px; font-weight: 600;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: #9aa4b8;
+      }
+      .price-card .price {
+        font-size: 64px; font-weight: 800; letter-spacing: -0.02em;
+        margin-top: 14px;
+      }
+      .price-card .price small {
+        font-size: 24px; font-weight: 500; color: #9aa4b8; margin-left: 4px;
+      }
+      .price-card .stay-line { color: #9aa4b8; font-size: 18px; margin-top: 10px; }
+      .price-card.highlight {
+        background: linear-gradient(135deg, rgba(92,235,213,0.14), rgba(184,139,255,0.10));
+        border-color: rgba(92,235,213,0.5);
+        box-shadow: 0 0 60px rgba(92,235,213,0.18);
+      }
+      .price-card.highlight .price { background: linear-gradient(135deg,#5cebd5,#b88bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .savings-badge {
+        margin-top: 14px;
+        display: inline-block; padding: 6px 14px; border-radius: 999px;
+        background: #f5b133; color: #1a1f2c;
+        font-size: 16px; font-weight: 700; letter-spacing: 0.04em;
+      }
+
+      /* ====== Scene 4: Cities ====== */
+      .city-skyline {
+        margin-top: 50px; width: 1100px; height: 240px;
+        opacity: 0;
+      }
+      .city-skyline path { fill: url(#brandGradFlat); opacity: 0.85; }
+      .city-skyline .building-edge { stroke: #5cebd5; stroke-width: 2; opacity: 0.6; fill: none; }
+      .city-stat {
+        margin-top: 36px;
+        display: flex; gap: 96px;
+        opacity: 0;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat-num {
+        font-size: 72px; font-weight: 800; letter-spacing: -0.03em;
+        background: linear-gradient(135deg,#5cebd5,#b88bff);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        line-height: 1;
+      }
+      .stat-label { font-size: 18px; color: #9aa4b8; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 8px; }
+
+      /* ====== Scene 5: Outro ====== */
+      .outro-logo { width: 180px; height: 180px; opacity: 0; }
+      .outro-logo path { fill: none; stroke: url(#brandGrad); stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+      .outro-word {
+        margin-top: 22px; font-size: 124px; font-weight: 800; letter-spacing: -0.04em;
+        opacity: 0;
+      }
+      .outro-url {
+        margin-top: 18px; font-size: 38px; color: #5cebd5;
+        letter-spacing: 0.12em; opacity: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="30"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Shared SVG defs -->
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+          <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#5cebd5" />
+            <stop offset="100%" stop-color="#b88bff" />
+          </linearGradient>
+          <linearGradient id="brandGradFlat" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5cebd5" stop-opacity="0.6" />
+            <stop offset="100%" stop-color="#b88bff" stop-opacity="0.4" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <!-- Background mesh waves (always present) -->
+      <svg class="bg-mesh" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+        <path d="M0 880 Q240 820 480 880 T960 880 T1440 880 T1920 880" />
+        <path d="M0 920 Q240 980 480 920 T960 920 T1440 920 T1920 920" />
+        <path d="M0 960 Q240 900 480 960 T960 960 T1440 960 T1920 960" />
+      </svg>
+
+      <!-- ============ SCENE 1: HERO / LOGO ============ -->
+      <div
+        id="scene-hero"
+        class="scene clip"
+        data-start="0"
+        data-duration="3.4"
+        data-track-index="1"
+      >
+        <svg class="hero-logo" viewBox="0 0 64 64">
+          <path class="hero-house" d="M32 6 L57 28 V52 a4 4 0 0 1 -4 4 H11 a4 4 0 0 1 -4 -4 V28 Z" />
+          <path class="hero-wave" d="M14 36 q4.5 -3.5 9 0 t9 0 t9 0 t9 0" />
+          <path class="hero-wave" d="M14 42 q4.5 3.5 9 0 t9 0 t9 0 t9 0" />
+          <path class="hero-wave" d="M14 48 q4.5 -3.5 9 0 t9 0 t9 0 t9 0" />
+        </svg>
+        <div class="hero-wordmark grad">bnbmesh</div>
+        <div class="hero-tagline">Agentic short-term rental, end&nbsp;to&nbsp;end.</div>
+      </div>
+
+      <!-- ============ SCENE 2: HOSTS ============ -->
+      <div
+        id="scene-hosts"
+        class="scene clip"
+        data-start="3.4"
+        data-duration="7.0"
+        data-track-index="1"
+      >
+        <div class="scene-kicker" id="hosts-kicker">For existing hosts</div>
+        <div class="scene-headline" id="hosts-headline">
+          <span class="grad">An AI agent</span> on every call,<br/>
+          on every platform you already use.
+        </div>
+        <div class="platforms" id="hosts-platforms">
+          <svg class="conn-svg" viewBox="0 0 1200 380">
+            <path class="conn-line" id="conn-1" d="M 110 70 Q 600 190 600 190" />
+            <path class="conn-line" id="conn-2" d="M 1080 70 Q 600 190 600 190" />
+            <path class="conn-line" id="conn-3" d="M 110 310 Q 600 190 600 190" />
+            <path class="conn-line" id="conn-4" d="M 1080 310 Q 600 190 600 190" />
+          </svg>
+          <div class="platform" id="plat-1" style="left:20px;top:34px">Guesty</div>
+          <div class="platform" id="plat-2" style="right:20px;top:34px">Airbnb</div>
+          <div class="platform" id="plat-3" style="left:20px;bottom:34px">VRBO</div>
+          <div class="platform" id="plat-4" style="right:20px;bottom:34px">Hospitable</div>
+          <div class="hub" id="hosts-hub">
+            <svg class="hub-inner" viewBox="0 0 64 64">
+              <path d="M32 6 L57 28 V52 a4 4 0 0 1 -4 4 H11 a4 4 0 0 1 -4 -4 V28 Z" />
+              <path d="M14 36 q4.5 -3.5 9 0 t9 0 t9 0 t9 0" />
+              <path d="M14 42 q4.5 3.5 9 0 t9 0 t9 0 t9 0" />
+              <path d="M14 48 q4.5 -3.5 9 0 t9 0 t9 0 t9 0" />
+            </svg>
+          </div>
+        </div>
+        <div class="scene-sub" id="hosts-sub">
+          We answer your guests. You jump in by SMS when they need a human.
+        </div>
+      </div>
+
+      <!-- ============ SCENE 3: GUESTS ============ -->
+      <div
+        id="scene-guests"
+        class="scene clip"
+        data-start="10.4"
+        data-duration="7.0"
+        data-track-index="1"
+      >
+        <div class="scene-kicker" id="guests-kicker">For guests</div>
+        <div class="scene-headline" id="guests-headline">
+          One search. <span class="grad">Every platform.</span>
+        </div>
+        <div class="price-row" id="guests-prices">
+          <div class="price-card" id="card-airbnb">
+            <div class="platform-name">Airbnb</div>
+            <div class="price">$312<small>/ni</small></div>
+            <div class="stay-line">incl. fees</div>
+          </div>
+          <div class="price-card" id="card-vrbo">
+            <div class="platform-name">VRBO</div>
+            <div class="price">$298<small>/ni</small></div>
+            <div class="stay-line">incl. fees</div>
+          </div>
+          <div class="price-card highlight" id="card-direct">
+            <div class="platform-name" style="color:#5cebd5">BnBMesh Direct</div>
+            <div class="price">$215<small>/ni</small></div>
+            <div class="stay-line">no platform cut</div>
+            <div class="savings-badge" id="save-badge">SAVE 31%</div>
+          </div>
+        </div>
+        <div class="scene-sub" id="guests-sub" style="margin-top:50px">
+          Skip the middlemen. Book direct with the host.
+        </div>
+      </div>
+
+      <!-- ============ SCENE 4: CITIES ============ -->
+      <div
+        id="scene-cities"
+        class="scene clip"
+        data-start="17.4"
+        data-duration="7.0"
+        data-track-index="1"
+      >
+        <div class="scene-kicker" id="cities-kicker">For cities &amp; governments</div>
+        <div class="scene-headline" id="cities-headline">
+          <span class="grad">Direct revenue.</span><br/>
+          Healthier neighborhoods.
+        </div>
+        <svg class="city-skyline" id="cities-skyline" viewBox="0 0 1200 320" preserveAspectRatio="none">
+          <path d="M 0 320 L 0 220 L 60 220 L 60 160 L 130 160 L 130 220 L 200 220 L 200 100 L 280 100 L 280 220 L 360 220 L 360 180 L 430 180 L 430 220 L 510 220 L 510 60 L 600 60 L 600 220 L 680 220 L 680 130 L 760 130 L 760 220 L 850 220 L 850 170 L 940 170 L 940 220 L 1020 220 L 1020 90 L 1110 90 L 1110 220 L 1200 220 L 1200 320 Z" />
+          <path class="building-edge" d="M 60 220 L 60 160 L 130 160 L 130 220 M 200 220 L 200 100 L 280 100 L 280 220 M 510 220 L 510 60 L 600 60 L 600 220 M 1020 220 L 1020 90 L 1110 90 L 1110 220" />
+        </svg>
+        <div class="city-stat" id="cities-stats">
+          <div class="stat"><div class="stat-num" id="stat-1">100%</div><div class="stat-label">Of fees stay local</div></div>
+          <div class="stat"><div class="stat-num" id="stat-2">0</div><div class="stat-label">Corporate skim</div></div>
+          <div class="stat"><div class="stat-num" id="stat-3">24/7</div><div class="stat-label">Permit + tax automation</div></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 5: OUTRO ============ -->
+      <div
+        id="scene-outro"
+        class="scene clip"
+        data-start="24.4"
+        data-duration="5.6"
+        data-track-index="1"
+      >
+        <svg class="outro-logo" viewBox="0 0 64 64">
+          <path d="M32 6 L57 28 V52 a4 4 0 0 1 -4 4 H11 a4 4 0 0 1 -4 -4 V28 Z" />
+          <path d="M14 36 q4.5 -3.5 9 0 t9 0 t9 0 t9 0" />
+          <path d="M14 42 q4.5 3.5 9 0 t9 0 t9 0 t9 0" />
+          <path d="M14 48 q4.5 -3.5 9 0 t9 0 t9 0 t9 0" />
+        </svg>
+        <div class="outro-word grad">bnbmesh</div>
+        <div class="outro-url">bnbmesh.ai</div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+
+      const tl = gsap.timeline({ paused: true });
+
+      /* ----- SCENE 1: hero (0 → 3.4) ----- */
+      tl.to(".hero-house", { strokeDashoffset: 0, duration: 1.0, ease: "power3.out" }, 0.1)
+        .to(".hero-wave", { strokeDashoffset: 0, duration: 0.5, ease: "power2.out", stagger: 0.12 }, 0.6)
+        .to(".hero-wordmark", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 1.5)
+        .from(".hero-wordmark", { y: 24, duration: 0.6, ease: "power3.out" }, 1.5)
+        .to(".hero-tagline", { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.0)
+        .to("#scene-hero", { opacity: 0, duration: 0.4, ease: "power2.in" }, 3.0);
+
+      /* ----- SCENE 2: hosts (3.4 → 10.4) ----- */
+      const HSTART = 3.4;
+      tl.fromTo("#hosts-kicker", { y: -10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, HSTART + 0.15)
+        .fromTo("#hosts-headline", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, HSTART + 0.3)
+        .fromTo("#plat-1", { x: -80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, HSTART + 1.0)
+        .fromTo("#plat-2", { x:  80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, HSTART + 1.05)
+        .fromTo("#plat-3", { x: -80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, HSTART + 1.10)
+        .fromTo("#plat-4", { x:  80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, HSTART + 1.15)
+        .to(".conn-line", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut", stagger: 0.08 }, HSTART + 1.6)
+        .to("#hosts-hub", { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, HSTART + 2.4)
+        .fromTo("#hosts-sub", { y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, HSTART + 3.6)
+        .to("#hosts-hub", { scale: 1.06, duration: 0.6, ease: "power1.inOut", yoyo: true, repeat: 1 }, HSTART + 4.4)
+        .to("#scene-hosts", { opacity: 0, duration: 0.4, ease: "power2.in" }, HSTART + 6.6);
+
+      /* ----- SCENE 3: guests (10.4 → 17.4) ----- */
+      const GSTART = 10.4;
+      tl.fromTo("#guests-kicker", { y: -10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, GSTART + 0.15)
+        .fromTo("#guests-headline", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, GSTART + 0.3)
+        .to("#card-airbnb", { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, GSTART + 1.0)
+        .to("#card-vrbo",   { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, GSTART + 1.2)
+        .to("#card-direct", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, GSTART + 1.6)
+        .from("#save-badge", { scale: 0, duration: 0.5, ease: "power3.out" }, GSTART + 2.6)
+        .fromTo("#guests-sub", { y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, GSTART + 3.4)
+        .to("#card-direct", { boxShadow: "0 0 100px rgba(92,235,213,0.45)", duration: 0.8, ease: "power1.inOut", yoyo: true, repeat: 1 }, GSTART + 4.0)
+        .to("#scene-guests", { opacity: 0, duration: 0.4, ease: "power2.in" }, GSTART + 6.6);
+
+      /* ----- SCENE 4: cities (17.4 → 24.4) ----- */
+      const CSTART = 17.4;
+      tl.fromTo("#cities-kicker", { y: -10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, CSTART + 0.15)
+        .fromTo("#cities-headline", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, CSTART + 0.3)
+        .fromTo("#cities-skyline", { y: 60 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, CSTART + 1.0)
+        .fromTo("#cities-stats", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, CSTART + 2.0)
+        // Count up the percentage stat
+        .from("#stat-1", { textContent: 0, duration: 1.4, ease: "power2.out", snap: { textContent: 1 }, onUpdate() {
+          this.targets()[0].textContent = Math.round(this.targets()[0].textContent) + "%";
+        }}, CSTART + 2.4)
+        .to("#scene-cities", { opacity: 0, duration: 0.4, ease: "power2.in" }, CSTART + 6.6);
+
+      /* ----- SCENE 5: outro (24.4 → 30) ----- */
+      const OSTART = 24.4;
+      tl.to(".outro-logo", { opacity: 1, duration: 0.6, ease: "power3.out" }, OSTART + 0.2)
+        .from(".outro-logo", { scale: 0.7, duration: 0.6, ease: "power3.out" }, OSTART + 0.2)
+        .to(".outro-word",   { opacity: 1, duration: 0.6, ease: "power3.out" }, OSTART + 0.7)
+        .from(".outro-word", { y: 24, duration: 0.6, ease: "power3.out" }, OSTART + 0.7)
+        .to(".outro-url",    { opacity: 1, duration: 0.5, ease: "power2.out" }, OSTART + 1.3);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

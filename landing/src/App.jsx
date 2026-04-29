@@ -161,6 +161,17 @@ function Hero({ onTalk, onHost }) {
   return (
     <section className="hero">
       <div className="hero-inner">
+        <video
+          className="hero-video"
+          src="/intro.mp4"
+          poster="/intro-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label="BnBMesh intro animation"
+        />
         <p className="hero-kicker">Democratizing short-term rental.</p>
         <h1>
           Agentic hosts.<br />
