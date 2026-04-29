@@ -353,7 +353,16 @@ function AppShell() {
     return (
       <>
         <Dashboard onAddListing={() => setCallMode('host')} />
-        {callMode && <Call mode={callMode} onClose={() => setCallMode(null)} />}
+        {callMode && (
+          <Call
+            mode={callMode}
+            onClose={() => setCallMode(null)}
+            onSignInRequest={() => setShowSignIn(true)}
+            onBecomeHostRequest={() => { window.location.hash = '#become-host' }}
+            onAddListingRequest={() => setCallMode('host')}
+          />
+        )}
+        {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
       </>
     )
   }
@@ -374,7 +383,15 @@ function AppShell() {
       <Features />
       <McpSection />
       <Footer />
-      {callMode && <Call mode={callMode} onClose={() => setCallMode(null)} />}
+      {callMode && (
+        <Call
+          mode={callMode}
+          onClose={() => setCallMode(null)}
+          onSignInRequest={() => setShowSignIn(true)}
+          onBecomeHostRequest={() => { window.location.hash = '#become-host' }}
+          onAddListingRequest={() => { window.location.hash = '#dashboard'; setCallMode('host') }}
+        />
+      )}
       {route === 'become-host' && <HostSignup onClose={closeBecomeHost} />}
       {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
       <Disclaimer />

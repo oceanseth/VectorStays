@@ -149,7 +149,7 @@ function ListingForm({ values, onChange, recentlyUpdated }) {
 // Main call modal
 // ---------------------------------------------------------------------------
 
-export default function Call({ mode = 'support', onClose }) {
+export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRequest, onAddListingRequest, onClose }) {
   const { getIdToken } = useAuth()
   const [status, setStatus] = useState('idle') // idle | connecting | live | ended | error
   const [transcript, setTranscript] = useState([])
@@ -160,6 +160,12 @@ export default function Call({ mode = 'support', onClose }) {
   const [recentField, setRecentField] = useState(null)
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved | failed
   const [saveError, setSaveError] = useState(null)
+  // Support-mode contextual prompts the agent triggers via tool calls.
+  // Each is { type, label, onClick, dismissedAt }
+  const [prompts, setPrompts] = useState([])
+  // Distinguishes "user closed the modal" from "Vapi disconnected for any
+  // other reason" — the latter shouldn't auto-dismiss the modal.
+  const userEndedRef = useRef(false)
   const vapiRef = useRef(null)
   const transcriptRef = useRef(null)
   const listingRef = useRef({})
@@ -195,6 +201,9 @@ export default function Call({ mode = 'support', onClose }) {
     })
 
     vapi.on('call-end', () => {
+      // The call ended on the Vapi side. We do NOT close the modal — the
+      // user is the only one who decides the modal closes. They can click
+      // "Talk again" to restart with prior transcript as context.
       setStatus('ended')
       fetch(`/api/calls/${callId}/end`, {
         method: 'POST',
@@ -226,19 +235,47 @@ export default function Call({ mode = 'support', onClose }) {
         }).catch(() => {})
         return
       }
-      // Vapi tool-calls — assistant invoked update_listing or submit_listing.
+      // Vapi tool-calls — handle update_listing / submit_listing (host mode)
+      // and search_listings / prompt_* (support mode).
       if (msg.type === 'tool-calls' && Array.isArray(msg.toolCallList)) {
         for (const tc of msg.toolCallList) {
           const name = tc?.function?.name || tc?.name
+          const tcId = tc?.id || tc?.toolCallId
           let args = tc?.function?.arguments ?? tc?.arguments ?? {}
           if (typeof args === 'string') {
             try { args = JSON.parse(args) } catch { args = {} }
           }
+
+          // host mode tools
           if (name === 'update_listing') {
             applyListingPatch(args)
-          } else if (name === 'submit_listing') {
-            // Agent thinks the form is complete. Persist and end the call.
-            saveListing({ endCall: true })
+            continue
+          }
+          if (name === 'submit_listing') {
+            saveListing({ endCall: false }) // don't end the call from a tool
+            continue
+          }
+
+          // support mode tools
+          if (name === 'search_listings') {
+            handleSearchListings(args?.query || '', tcId)
+            continue
+          }
+          if (name === 'prompt_signin') {
+            addPrompt({ type: 'signin', label: 'Sign in', onClick: () => onSignInRequest?.() })
+            continue
+          }
+          if (name === 'prompt_become_host') {
+            addPrompt({ type: 'become_host', label: 'Become a Host', onClick: () => onBecomeHostRequest?.() })
+            continue
+          }
+          if (name === 'prompt_add_listing') {
+            addPrompt({ type: 'add_listing', label: 'Add a listing', onClick: () => onAddListingRequest?.() })
+            continue
+          }
+          if (name === 'prompt_connect_guesty') {
+            addPrompt({ type: 'connect_guesty', label: 'Connect Guesty (coming soon)', onClick: () => alert('Guesty integration is in active development — your data hooks will land in v2.') })
+            continue
           }
         }
       }
@@ -251,6 +288,54 @@ export default function Call({ mode = 'support', onClose }) {
   useEffect(() => {
     if (transcriptRef.current) transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight
   }, [transcript])
+
+  // ---- Tool-call handlers (support mode) -------------------------------
+
+  const addPrompt = (p) => {
+    setPrompts((prev) => {
+      // Don't add duplicates of the same prompt type within the same call.
+      if (prev.some((x) => x.type === p.type)) return prev
+      return [...prev, { ...p, ts: Date.now() }]
+    })
+  }
+  const dismissPrompt = (type) => {
+    setPrompts((prev) => prev.filter((p) => p.type !== type))
+  }
+
+  const sendToolResult = (toolCallId, result) => {
+    if (!toolCallId || !vapiRef.current) return
+    try {
+      vapiRef.current.send({
+        type: 'add-message',
+        message: {
+          role: 'tool',
+          toolCallId,
+          content: typeof result === 'string' ? result : JSON.stringify(result),
+        },
+      })
+    } catch (e) { console.warn('vapi tool-result send failed:', e.message) }
+  }
+
+  const handleSearchListings = async (query, toolCallId) => {
+    try {
+      // ?fast=1 caps the Lambda timeout at 2.5s so the agent's tool call
+      // returns inside Vapi's tool budget and the call doesn't stall.
+      const r = await fetch(`/api/search?fast=1&q=${encodeURIComponent(query)}`)
+      const j = await r.json()
+      const top = (j.results || []).slice(0, 4).map((x) => ({
+        id: x.id,
+        title: x.title,
+        location: x.location,
+        nightly_price_usd: x.nightlyPrice,
+        cheapest_platform: x.cheapestPlatform,
+        platforms: x.platforms,
+        is_direct: !!x.isDirect,
+      }))
+      sendToolResult(toolCallId, { source: j.source, results: top })
+    } catch (e) {
+      sendToolResult(toolCallId, { error: e.message, results: [] })
+    }
+  }
 
   // Apply a partial-update patch from either tool-call or manual edit.
   const applyListingPatch = (patch) => {
@@ -322,7 +407,34 @@ export default function Call({ mode = 'support', onClose }) {
     }
   }
 
-  const stop = () => { try { vapiRef.current?.stop() } catch {} }
+  const stop = () => {
+    userEndedRef.current = true
+    try { vapiRef.current?.stop() } catch {}
+  }
+
+  // After a Vapi-side disconnect, the user can re-open the connection.
+  // We'd like to inject prior transcript as context so the agent knows
+  // what we were doing. For now we just reconnect; the assistant's
+  // memory will catch up via the user's next utterance.
+  const restart = async () => {
+    setError(null)
+    setStatus('connecting')
+    try {
+      await vapiRef.current.start(ASSISTANTS[mode], {
+        metadata: { bnbmesh_call_id: callId, mode, restart: true },
+      })
+    } catch (e) {
+      const raw = e?.message ?? e
+      setError(typeof raw === 'string' ? raw : (() => { try { return JSON.stringify(raw) } catch { return 'could not restart' } })())
+      setStatus('error')
+    }
+  }
+
+  const closeModal = () => {
+    userEndedRef.current = true
+    try { vapiRef.current?.stop() } catch {}
+    onClose?.()
+  }
 
   const copyShare = async () => {
     try {
@@ -335,11 +447,11 @@ export default function Call({ mode = 'support', onClose }) {
   // ---- Render -----------------------------------------------------------
 
   return (
-    <div className="callmodal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose?.() }}>
+    <div className="callmodal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}>
       <div className={`callmodal ${isHost ? 'callmodal-wide' : ''}`}>
         <div className="callmodal-head">
           <h3>{isHost ? 'Become a Host' : 'BnBMesh Voice Support'}</h3>
-          <button className="callmodal-close" onClick={onClose} aria-label="Close">×</button>
+          <button className="callmodal-close" onClick={closeModal} aria-label="Close">×</button>
         </div>
 
         <div className={`callmodal-body ${isHost ? 'callmodal-body-split' : ''}`}>
@@ -382,12 +494,32 @@ export default function Call({ mode = 'support', onClose }) {
                   <button className="btn btn-ghost btn-sm" onClick={copyShare}>{shareCopied ? 'Copied' : 'Share'}</button>
                 </div>
 
+                {/* Contextual action buttons surfaced by the agent (support mode). */}
+                {!isHost && prompts.length > 0 && (
+                  <div className="callmodal-prompts">
+                    {prompts.map((p) => (
+                      <div key={p.type} className="callmodal-prompt">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => { p.onClick?.(); dismissPrompt(p.type) }}
+                        >
+                          {p.label}
+                        </button>
+                        <button className="callmodal-prompt-x" onClick={() => dismissPrompt(p.type)} aria-label="dismiss">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="callmodal-actions">
                   {status === 'live' && (
                     <button className="btn btn-danger" onClick={stop}>End call</button>
                   )}
                   {status === 'ended' && (
-                    <button className="btn btn-primary" onClick={onClose}>Done</button>
+                    <>
+                      <button className="btn btn-ghost btn-sm" onClick={closeModal}>Close</button>
+                      <button className="btn btn-primary" onClick={restart}>Talk again</button>
+                    </>
                   )}
                 </div>
               </>

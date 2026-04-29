@@ -707,10 +707,13 @@ export const handler = async (event) => {
 
   if (path === '/api/search' || path === '/search') {
     const q = event.queryStringParameters?.q || ''
-    // Allow caller to override timeout (e.g. direct Lambda invoke for pre-warm,
-    // which isn't bound by the 29s API Gateway cap).
+    // ?fast=1 — voice-context: bail fast (2.5s), prefer cache + mock so the
+    //          Vapi tool call returns under 3s and the call doesn't stall.
+    // ?live=1 — direct invoke (no API GW cap): wait up to 55s for TinyFish.
+    // default — UI search: 22s.
     const live = event.queryStringParameters?.live === '1'
-    const timeoutMs = live ? 55000 : 22000
+    const fast = event.queryStringParameters?.fast === '1'
+    const timeoutMs = live ? 55000 : fast ? 2500 : 22000
     const out = await searchListings(q, { timeoutMs })
     return json(200, { query: q, ...out })
   }
