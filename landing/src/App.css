@@ -667,6 +667,57 @@ section { scroll-margin-top: 24px; }
 }
 .listing-card-meta { color: var(--fg-muted); font-size: 0.88rem; margin: 0; }
 .listing-card-actions { margin-top: auto; padding-top: 6px; }
+
+/* ---------- Toggle switch ---------- */
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.toggle-track {
+  position: relative;
+  width: 44px; height: 24px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  transition: background 0.18s ease, border-color 0.18s ease;
+  flex-shrink: 0;
+}
+.toggle-thumb {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--fg-muted);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.toggle-on .toggle-track {
+  background: linear-gradient(135deg, rgba(92,235,213,0.5), rgba(184,139,255,0.45));
+  border-color: rgba(92,235,213,0.6);
+}
+.toggle-on .toggle-thumb {
+  transform: translateX(20px);
+  background: var(--fg);
+}
+.toggle-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.toggle-on .toggle-label { color: var(--accent); }
+.toggle-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .callmodal-head {
   display: flex; justify-content: space-between; align-items: center;
   padding: 18px 22px; border-bottom: 1px solid var(--card-border);

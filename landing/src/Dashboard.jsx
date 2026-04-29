@@ -118,16 +118,17 @@ export default function Dashboard({ onAddListing }) {
             {listings.map((l) => {
               const supportOn = !!l.customer_support_enabled
               const status = l.status || 'draft'
-              const complete = !!l.is_complete
+              const isActive = status === 'active'
               const missing = missingFields(l)
+              const canActivate = missing.length === 0
               return (
                 <article key={l.id} className="listing-card">
                   <div className="listing-card-head">
                     <h4>{l.title || l.address || 'Untitled draft'}</h4>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      {status === 'active' && <span className="demo-badge demo-badge-direct">active</span>}
-                      {status === 'draft' && <span className="demo-badge demo-badge-mock">draft</span>}
-                      {status === 'inactive' && <span className="demo-badge">inactive</span>}
+                      {isActive && <span className="demo-badge demo-badge-direct">active</span>}
+                      {!isActive && status === 'inactive' && <span className="demo-badge">inactive</span>}
+                      {!isActive && status !== 'inactive' && <span className="demo-badge demo-badge-mock">draft</span>}
                       {supportOn && <span className="demo-badge demo-badge-direct">support on</span>}
                     </div>
                   </div>
@@ -139,42 +140,35 @@ export default function Dashboard({ onAddListing }) {
                   </p>
                   {missing.length > 0 && (
                     <p className="callmodal-hint" style={{ margin: 0 }}>
-                      Missing: {missing.join(', ')}
+                      To go live, add: <strong>{missing.join(', ')}</strong>
                     </p>
                   )}
-                  <div className="listing-card-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {status !== 'active' && (
+                  <div className="listing-card-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <label
+                      className={`toggle ${isActive ? 'toggle-on' : ''} ${(!canActivate && !isActive) ? 'toggle-disabled' : ''}`}
+                      title={!canActivate && !isActive ? `Cannot activate: ${missing.join(', ')}` : (isActive ? 'Active — guests can find this listing' : 'Inactive')}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        disabled={busyId === l.id || (!isActive && !canActivate)}
+                        onChange={() => setActive(l.id, isActive ? 'deactivate' : 'activate')}
+                      />
+                      <span className="toggle-track"><span className="toggle-thumb"></span></span>
+                      <span className="toggle-label">{isActive ? 'Active' : 'Inactive'}</span>
+                    </label>
+
+                    {isActive && !supportOn && (
                       <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => setActive(l.id, 'activate')}
-                        disabled={!complete || busyId === l.id}
-                        title={complete ? 'Make this listing live' : `Add ${missing.join(', ')} first`}
+                        className="btn btn-primary btn-sm"
+                        onClick={() => enableSupport(l.id)}
+                        disabled={busyId === l.id}
                       >
-                        {busyId === l.id ? '…' : 'Set active'}
+                        {busyId === l.id ? 'Starting…' : 'Enable AI Customer Support — $20/mo'}
                       </button>
                     )}
-                    {status === 'active' && !supportOn && (
-                      <>
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => enableSupport(l.id)}
-                          disabled={busyId === l.id}
-                        >
-                          {busyId === l.id ? 'Starting…' : 'Enable AI Customer Support — $20/mo'}
-                        </button>
-                        <button
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => setActive(l.id, 'deactivate')}
-                          disabled={busyId === l.id}
-                        >
-                          Deactivate
-                        </button>
-                      </>
-                    )}
-                    {status === 'active' && supportOn && (
-                      <span className="callmodal-hint" style={{ flex: 1 }}>
-                        AI customer support is live for this listing.
-                      </span>
+                    {isActive && supportOn && (
+                      <span className="callmodal-hint">AI customer support is live for this listing.</span>
                     )}
                   </div>
                 </article>

@@ -239,26 +239,71 @@ async function fetchDirectListings(query) {
     ids = await c.sMembers('bnbmesh:listings:index')
   } catch { return [] }
   if (!ids?.length) return []
+
+  const filters = parseSearchQuery(query)
   const items = []
   for (const id of ids) {
     try {
       const raw = await c.get(`bnbmesh:listing:${id}`)
       if (!raw) continue
       const l = JSON.parse(raw)
-      if (matchesQuery(l, query)) items.push(toDirectResult(l))
+      // Only ACTIVE listings appear in public search results.
+      if (l.status !== 'active') continue
+      if (matchesFilters(l, filters)) items.push(toDirectResult(l))
     } catch {}
   }
   return items
 }
 
-function matchesQuery(listing, query) {
-  if (!query) return true
-  const hay = `${listing.address || ''} ${listing.title || ''} ${listing.description || ''} ${(listing.amenities || []).join(' ')}`.toLowerCase()
-  return query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((t) => t.length > 2)
-    .some((t) => hay.includes(t))
+// Parse a free-text query into structured filters: city, state, zip, beds.
+function parseSearchQuery(query) {
+  const q = (query || '').toLowerCase()
+  const f = { raw: q, tokens: [], city: null, state: null, zip: null, beds: null }
+
+  // 5-digit US zip
+  const zipMatch = q.match(/\b(\d{5})\b/)
+  if (zipMatch) f.zip = zipMatch[1]
+
+  // bedrooms — "3 bedroom", "3br", "3-bedroom", "3 bed"
+  const bedMatch = q.match(/\b(\d+)\s*(?:br|bd|bed|bedrooms?)\b/i)
+  if (bedMatch) f.beds = parseInt(bedMatch[1], 10)
+
+  // city — known cities (extend as inventory grows)
+  const cityMatch = q.match(/\b(santa barbara|austin|big bear|pasadena|palm springs|los angeles|san francisco|new york|miami|denver|nashville)\b/)
+  if (cityMatch) f.city = cityMatch[1]
+
+  // 2-letter state abbrev with comma context
+  const stateMatch = q.match(/\b([a-z]{2})\b(?:\s|$)/)
+  if (stateMatch && /^(?:al|ak|az|ar|ca|co|ct|de|fl|ga|hi|id|il|in|ia|ks|ky|la|me|md|ma|mi|mn|ms|mo|mt|ne|nv|nh|nj|nm|ny|nc|nd|oh|ok|or|pa|ri|sc|sd|tn|tx|ut|vt|va|wa|wv|wi|wy)$/.test(stateMatch[1])) {
+    f.state = stateMatch[1]
+  }
+
+  // Fallback tokens that didn't get parsed into a structured filter
+  f.tokens = q.split(/\s+/).filter((t) => t.length > 2 && !['for','the','and','with','near','any'].includes(t))
+
+  return f
+}
+
+function matchesFilters(listing, f) {
+  const addr = (listing.address || '').toLowerCase()
+  const hay = `${addr} ${(listing.title || '').toLowerCase()} ${(listing.description || '').toLowerCase()} ${(listing.amenities || []).join(' ').toLowerCase()}`
+
+  // Hard filters — if specified, must match.
+  if (f.zip && !addr.includes(f.zip)) return false
+  if (f.city && !addr.includes(f.city)) return false
+  if (f.state) {
+    // Match `, ca` (with the comma) to avoid coincidental two-letter matches.
+    const re = new RegExp(`,\\s*${f.state}\\b`)
+    if (!re.test(addr)) return false
+  }
+  if (f.beds != null && (listing.bedrooms == null || Number(listing.bedrooms) < f.beds)) return false
+
+  // If we already matched any structured filter, accept.
+  if (f.zip || f.city || f.state || f.beds != null) return true
+
+  // No structured filter — fall back to token overlap.
+  if (!f.tokens.length) return true
+  return f.tokens.some((t) => hay.includes(t))
 }
 
 function toDirectResult(l) {
@@ -941,16 +986,26 @@ export const handler = async (event) => {
       return json(403, { error: 'not your listing' })
     }
     if (action === 'activate') {
-      if (!listing.is_complete) {
-        return json(400, { error: 'listing is incomplete — add a full address (street, city, state) and a nightly price before activating' })
+      // Recompute completeness on the fly so legacy listings (saved before
+      // is_complete existed) work without a manual re-save.
+      const addressOk = !!(listing.address && /,\s*[A-Za-z]{2,}/.test(listing.address))
+      const priceOk = !!(listing.nightlyPrice && Number(listing.nightlyPrice) > 0)
+      if (!addressOk || !priceOk) {
+        const missing = []
+        if (!addressOk) missing.push('full address with city + state')
+        if (!priceOk) missing.push('nightly price')
+        return json(400, { error: `Cannot activate — still missing: ${missing.join(', ')}` })
       }
+      listing.is_complete = true
       listing.status = 'active'
       listing.activated_at = new Date().toISOString()
     } else {
       listing.status = 'inactive'
       listing.deactivated_at = new Date().toISOString()
     }
+    listing.host_uid = listing.host_uid || claims.sub  // backfill ownership for legacy
     await c.set(`bnbmesh:listing:${listingId}`, JSON.stringify(listing))
+    await c.sAdd(`bnbmesh:host:${claims.sub}:listings`, listingId)
     return json(200, { ok: true, listing })
   }
 
@@ -1001,6 +1056,9 @@ export const handler = async (event) => {
     params.set('mode', 'subscription')
     params.set('line_items[0][price]', priceId)
     params.set('line_items[0][quantity]', '1')
+    // Lets users enter promotion codes (e.g. FIRSTMONTHFREE) on the Checkout
+    // page. Subscription mode still requires a payment method.
+    params.set('allow_promotion_codes', 'true')
     params.set('client_reference_id', claims.sub)
     if (claims.email) params.set('customer_email', claims.email)
     params.set('success_url', `${origin}/#dashboard?support=enabled&listing=${encodeURIComponent(listingId)}`)
