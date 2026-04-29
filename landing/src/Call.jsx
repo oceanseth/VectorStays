@@ -164,8 +164,13 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
   // Each is { type, label, onClick, dismissedAt }
   const [prompts, setPrompts] = useState([])
   // Distinguishes "user closed the modal" from "Vapi disconnected for any
-  // other reason" — the latter shouldn't auto-dismiss the modal.
+  // other reason" — only the former actually ends the modal. Anything else
+  // is silently re-connected so the user feels like they're in one continuous
+  // conversation.
   const userEndedRef = useRef(false)
+  const transcriptRef2 = useRef([])     // ref-mirror of transcript for restart context
+  const restartCountRef = useRef(0)     // prevent infinite restart loops on hard failures
+  const restartTimerRef = useRef(null)
   const vapiRef = useRef(null)
   const transcriptRef = useRef(null)
   const listingRef = useRef({})
@@ -201,15 +206,35 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
     })
 
     vapi.on('call-end', () => {
-      // The call ended on the Vapi side. We do NOT close the modal — the
-      // user is the only one who decides the modal closes. They can click
-      // "Talk again" to restart with prior transcript as context.
-      setStatus('ended')
       fetch(`/api/calls/${callId}/end`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ ended_at: new Date().toISOString(), listing: isHost ? listing : null }),
       }).catch(() => {})
+
+      // If the user clicked Close (or the X), stop here.
+      if (userEndedRef.current) {
+        setStatus('ended')
+        return
+      }
+
+      // Otherwise treat this as a Vapi-side disconnect (silence timeout,
+      // network blip, etc.) and seamlessly start a new call with the
+      // prior transcript injected as system context. To the user, the
+      // conversation just continues.
+      if (restartCountRef.current >= 4) {
+        // Vapi keeps disconnecting — something is wrong. Surface it.
+        setStatus('error')
+        setError('Voice connection keeps dropping. Refresh the page to try again.')
+        return
+      }
+      restartCountRef.current += 1
+      // Brief debounce in case multiple end events fire.
+      clearTimeout(restartTimerRef.current)
+      restartTimerRef.current = setTimeout(() => {
+        if (userEndedRef.current) return
+        restartWithContext()
+      }, 250)
     })
 
     vapi.on('error', (e) => {
@@ -227,7 +252,11 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
     vapi.on('message', (msg) => {
       if (msg.type === 'transcript' && msg.transcriptType === 'final') {
         const turn = { role: msg.role, text: msg.transcript, at: new Date().toISOString() }
-        setTranscript((t) => [...t, turn])
+        setTranscript((t) => {
+          const next = [...t, turn]
+          transcriptRef2.current = next
+          return next
+        })
         fetch(`/api/calls/${callId}/turn`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -412,20 +441,36 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
     try { vapiRef.current?.stop() } catch {}
   }
 
-  // After a Vapi-side disconnect, the user can re-open the connection.
-  // We'd like to inject prior transcript as context so the agent knows
-  // what we were doing. For now we just reconnect; the assistant's
-  // memory will catch up via the user's next utterance.
-  const restart = async () => {
+  // Seamless reconnect with prior transcript baked into a system message.
+  // The user shouldn't notice the call ended at all — to them it's still
+  // the same conversation.
+  const restartWithContext = async () => {
+    if (userEndedRef.current) return
     setError(null)
+    // Briefly show 'connecting' so the indicator dot flickers, then 'live'
     setStatus('connecting')
     try {
-      await vapiRef.current.start(ASSISTANTS[mode], {
+      const recent = transcriptRef2.current.slice(-12)  // last ~6 exchanges
+      const summary = recent.map((t) => `${t.role === 'assistant' ? 'agent' : 'user'}: ${t.text}`).join('\n')
+      const overrides = {
         metadata: { bnbmesh_call_id: callId, mode, restart: true },
-      })
+      }
+      if (recent.length > 0) {
+        // The voice channel briefly dropped. Prepend a system note to the
+        // assistant's prompt so it picks up where it left off without
+        // making the user repeat themselves.
+        overrides.firstMessage = ''  // don't greet — slip back into the conversation
+        overrides.model = {
+          messages: [{
+            role: 'system',
+            content: `IMPORTANT: this is a CONTINUATION of a conversation that briefly disconnected. Do not greet again. Do not say hello. Just listen for the user to continue speaking, and respond contextually based on what was just discussed.\n\nRECENT TRANSCRIPT (most recent last):\n${summary}\n\nResume naturally — the user is still mid-conversation.`,
+          }],
+        }
+      }
+      await vapiRef.current.start(ASSISTANTS[mode], overrides)
     } catch (e) {
       const raw = e?.message ?? e
-      setError(typeof raw === 'string' ? raw : (() => { try { return JSON.stringify(raw) } catch { return 'could not restart' } })())
+      setError(typeof raw === 'string' ? raw : (() => { try { return JSON.stringify(raw) } catch { return 'could not reconnect' } })())
       setStatus('error')
     }
   }
@@ -512,14 +557,8 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
                 )}
 
                 <div className="callmodal-actions">
-                  {status === 'live' && (
-                    <button className="btn btn-danger" onClick={stop}>End call</button>
-                  )}
-                  {status === 'ended' && (
-                    <>
-                      <button className="btn btn-ghost btn-sm" onClick={closeModal}>Close</button>
-                      <button className="btn btn-primary" onClick={restart}>Talk again</button>
-                    </>
+                  {(status === 'live' || status === 'connecting' || status === 'ended') && (
+                    <button className="btn btn-danger" onClick={closeModal}>End call</button>
                   )}
                 </div>
               </>
