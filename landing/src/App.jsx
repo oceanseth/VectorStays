@@ -169,6 +169,8 @@ function Hero({ onTalk, onHost }) {
           muted
           loop
           playsInline
+          controls
+          controlsList="nodownload"
           preload="metadata"
           aria-label="BnBMesh intro animation"
         />

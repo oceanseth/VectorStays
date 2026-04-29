@@ -188,7 +188,7 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="30"
+      data-duration="33"
       data-width="1920"
       data-height="1080"
     >
@@ -309,7 +309,7 @@
         id="scene-cities"
         class="scene clip"
         data-start="17.4"
-        data-duration="7.0"
+        data-duration="10.0"
         data-track-index="1"
       >
         <div class="scene-kicker" id="cities-kicker">For cities &amp; governments</div>
@@ -322,7 +322,7 @@
           <path class="building-edge" d="M 60 220 L 60 160 L 130 160 L 130 220 M 200 220 L 200 100 L 280 100 L 280 220 M 510 220 L 510 60 L 600 60 L 600 220 M 1020 220 L 1020 90 L 1110 90 L 1110 220" />
         </svg>
         <div class="city-stat" id="cities-stats">
-          <div class="stat"><div class="stat-num" id="stat-1">100%</div><div class="stat-label">Of fees stay local</div></div>
+          <div class="stat"><div class="stat-num" id="stat-1">30%</div><div class="stat-label">Of fees stay local</div></div>
           <div class="stat"><div class="stat-num" id="stat-2">0</div><div class="stat-label">Corporate skim</div></div>
           <div class="stat"><div class="stat-num" id="stat-3">24/7</div><div class="stat-label">Permit + tax automation</div></div>
         </div>
@@ -332,7 +332,7 @@
       <div
         id="scene-outro"
         class="scene clip"
-        data-start="24.4"
+        data-start="27.4"
         data-duration="5.6"
         data-track-index="1"
       >
@@ -386,20 +386,25 @@
         .to("#card-direct", { boxShadow: "0 0 100px rgba(92,235,213,0.45)", duration: 0.8, ease: "power1.inOut", yoyo: true, repeat: 1 }, GSTART + 4.0)
         .to("#scene-guests", { opacity: 0, duration: 0.4, ease: "power2.in" }, GSTART + 6.6);
 
-      /* ----- SCENE 4: cities (17.4 → 24.4) ----- */
+      /* ----- SCENE 4: cities (17.4 → 27.4) ----- */
       const CSTART = 17.4;
       tl.fromTo("#cities-kicker", { y: -10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, CSTART + 0.15)
         .fromTo("#cities-headline", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, CSTART + 0.3)
-        .fromTo("#cities-skyline", { y: 60 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, CSTART + 1.0)
-        .fromTo("#cities-stats", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, CSTART + 2.0)
-        // Count up the percentage stat
-        .from("#stat-1", { textContent: 0, duration: 1.4, ease: "power2.out", snap: { textContent: 1 }, onUpdate() {
-          this.targets()[0].textContent = Math.round(this.targets()[0].textContent) + "%";
-        }}, CSTART + 2.4)
-        .to("#scene-cities", { opacity: 0, duration: 0.4, ease: "power2.in" }, CSTART + 6.6);
+        .fromTo("#cities-skyline", { y: 60 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, CSTART + 1.2)
+        .fromTo("#cities-stats", { y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, CSTART + 2.4)
+        // Flash the headline number — quick scale + glow on entrance, no count-up.
+        .fromTo("#stat-1",
+          { scale: 0.5, opacity: 0, filter: "drop-shadow(0 0 0 rgba(92,235,213,0))" },
+          { scale: 1.18, opacity: 1, filter: "drop-shadow(0 0 22px rgba(92,235,213,0.7))",
+            duration: 0.35, ease: "power3.out" },
+          CSTART + 2.8)
+        .to("#stat-1", { scale: 1, filter: "drop-shadow(0 0 0 rgba(92,235,213,0))",
+          duration: 0.5, ease: "power2.inOut" }, CSTART + 3.15)
+        // Hold on the stats for a few extra seconds before fading out.
+        .to("#scene-cities", { opacity: 0, duration: 0.5, ease: "power2.in" }, CSTART + 9.4);
 
-      /* ----- SCENE 5: outro (24.4 → 30) ----- */
-      const OSTART = 24.4;
+      /* ----- SCENE 5: outro (27.4 → 33) ----- */
+      const OSTART = 27.4;
       tl.to(".outro-logo", { opacity: 1, duration: 0.6, ease: "power3.out" }, OSTART + 0.2)
         .from(".outro-logo", { scale: 0.7, duration: 0.6, ease: "power3.out" }, OSTART + 0.2)
         .to(".outro-word",   { opacity: 1, duration: 0.6, ease: "power3.out" }, OSTART + 0.7)
