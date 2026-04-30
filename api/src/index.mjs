@@ -36,6 +36,53 @@ function randomHex(bytes = 16) {
 }
 
 // ---------------------------------------------------------------------------
+// Knowledge base (3-category FAQ used by the voice agent and the admin UI)
+// ---------------------------------------------------------------------------
+
+const KB_CATEGORIES = ['hosts', 'guests', 'faq']
+
+function defaultKb() {
+  return {
+    hosts: 'BnBMesh helps existing short-term-rental hosts in three ways: ' +
+      '(1) customer-support voice agents that take guest calls 24/7 on a shared BnBMesh number, ' +
+      'identify the caller against the host’s reservations, and SMS the host only when a human is needed. ' +
+      '(2) Direct listings — hosts can publish their property to BnBMesh’s search and bypass platform commissions on direct bookings. ' +
+      '(3) Operations agents (coming soon) that monitor cleanings, pricing, and reservation issues across Guesty/Hospitable/etc.',
+    guests: 'BnBMesh searches Airbnb, VRBO, HomeAway, and direct-host listings in one place. ' +
+      'Guests can find the cheapest option per night and book directly with hosts when available, skipping platform fees. ' +
+      'During a stay, the BnBMesh AI support number can answer questions about wifi, check-in, parking, etc., and bring the host into the call when needed.',
+    faq: 'Pricing: free for guests, free for hosts to list. AI customer support is $20 / month / listing. ' +
+      'For cities and governments: BnBMesh exposes compliance + tax automation features that route directly to local agencies, with no corporate skim. ' +
+      'For partners (PMS providers, payment rails, telephony): integration is via OAuth or API key. Reach out via the Become-a-Partner flow on the homepage.',
+    updated_at: null,
+    updated_by: null,
+  }
+}
+
+function sanitizeKb(input) {
+  const src = (input && typeof input === 'object') ? input : {}
+  const out = {}
+  for (const k of KB_CATEGORIES) {
+    out[k] = typeof src[k] === 'string' ? src[k].slice(0, 8000) : ''
+  }
+  return out
+}
+
+async function readKb() {
+  const c = await redis()
+  if (!c) return defaultKb()
+  try {
+    const v = await c.get('bnbmesh:kb')
+    if (!v) return defaultKb()
+    const parsed = JSON.parse(v)
+    return { ...defaultKb(), ...parsed }
+  } catch (e) {
+    console.warn('readKb', e.message)
+    return defaultKb()
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Firebase ID token verification (modular, no firebase-admin SDK).
 // Verifies signature against Google's public certs, audience = projectId.
 // ---------------------------------------------------------------------------
@@ -727,6 +774,40 @@ export const handler = async (event) => {
     return json(200, { query: q, stays: (out.results || []).slice(0, 2) })
   }
 
+  // ---- Knowledge base (FAQ for the voice agent + admin editor) ----------
+  // Single Redis blob bnbmesh:kb. Read publicly so the support modal can
+  // surface category bullets; only admins can write.
+  if (path === '/api/kb' || path === '/kb') {
+    if (method !== 'GET') return json(405, { error: 'method not allowed' })
+    return json(200, { kb: await readKb() })
+  }
+
+  if (path === '/api/admin/kb' || path === '/admin/kb') {
+    if (method === 'GET') {
+      const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+      if (!isAdminClaims(claims)) return json(403, { error: 'admin only' })
+      return json(200, { kb: await readKb() })
+    }
+    if (method === 'POST') {
+      const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+      if (!isAdminClaims(claims)) return json(403, { error: 'admin only' })
+      let body = {}
+      try {
+        body = event.body
+          ? (event.isBase64Encoded ? JSON.parse(Buffer.from(event.body, 'base64').toString()) : JSON.parse(event.body))
+          : {}
+      } catch { return json(400, { error: 'bad json' }) }
+      const next = sanitizeKb(body.kb || body)
+      next.updated_at = new Date().toISOString()
+      next.updated_by = claims.email || claims.sub
+      const c = await redis()
+      if (!c) return json(503, { error: 'redis not configured' })
+      await c.set('bnbmesh:kb', JSON.stringify(next))
+      return json(200, { kb: next })
+    }
+    return json(405, { error: 'method not allowed' })
+  }
+
   // ---- Vapi server-side tools -------------------------------------------
   // POST /api/vapi/tool — Vapi calls this directly when the assistant
   // invokes a tool that has a server.url configured. Request body:
@@ -752,6 +833,18 @@ export const handler = async (event) => {
       }
       const tcId = tc?.id || tc?.toolCallId
       try {
+        if (name === 'get_kb') {
+          const kb = await readKb()
+          const cat = String(args?.category || '').toLowerCase()
+          const content = KB_CATEGORIES.includes(cat) ? kb[cat] : null
+          results.push({
+            toolCallId: tcId,
+            result: JSON.stringify(content
+              ? { category: cat, content }
+              : { error: `unknown category: ${args?.category}`, allowed: KB_CATEGORIES }),
+          })
+          continue
+        }
         if (name === 'search_listings') {
           const out = await searchListings(args?.query || '', { timeoutMs: 2500 })
           const top = (out.results || []).slice(0, 4).map((x) => ({

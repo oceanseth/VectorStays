@@ -9,6 +9,10 @@ export default function Admin() {
   const { user, isAdmin, getIdToken, signOut } = useAuth()
   const [leads, setLeads] = useState(null)
   const [hosts, setHosts] = useState(null)
+  const [kb, setKb] = useState(null)
+  const [kbDirty, setKbDirty] = useState(false)
+  const [kbSaving, setKbSaving] = useState(false)
+  const [kbStatus, setKbStatus] = useState(null) // null | 'saved' | 'failed'
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -18,19 +22,50 @@ export default function Admin() {
       try {
         const token = await getIdToken()
         const headers = { authorization: `Bearer ${token}` }
-        const [l, h] = await Promise.all([
+        const [l, h, k] = await Promise.all([
           fetch('/api/admin/leads', { headers }).then((r) => r.json()),
           fetch('/api/admin/hosts', { headers }).then((r) => r.json()),
+          fetch('/api/admin/kb',    { headers }).then((r) => r.json()),
         ])
         if (stopped) return
         setLeads(l.leads || [])
         setHosts(h.hosts || [])
+        setKb(k.kb || { hosts: '', guests: '', faq: '' })
       } catch (e) {
         if (!stopped) setError(e.message)
       }
     })()
     return () => { stopped = true }
   }, [isAdmin, getIdToken])
+
+  const updateKb = (key, value) => {
+    setKb((prev) => ({ ...(prev || {}), [key]: value }))
+    setKbDirty(true)
+    setKbStatus(null)
+  }
+
+  const saveKb = async () => {
+    setKbSaving(true); setKbStatus(null)
+    try {
+      const token = await getIdToken()
+      const r = await fetch('/api/admin/kb', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        body: JSON.stringify({ kb }),
+      })
+      const j = await r.json()
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`)
+      setKb(j.kb)
+      setKbDirty(false)
+      setKbStatus('saved')
+      setTimeout(() => setKbStatus(null), 1800)
+    } catch (e) {
+      setKbStatus('failed')
+      setError(e.message)
+    } finally {
+      setKbSaving(false)
+    }
+  }
 
   if (!user) {
     return (
@@ -58,6 +93,52 @@ export default function Admin() {
       </header>
 
       {error && <p className="demo-error">{error}</p>}
+
+      <section className="admin-section">
+        <h3>Knowledge base</h3>
+        <p className="callmodal-hint" style={{ marginTop: 0 }}>
+          The voice agent calls <code>get_kb(category)</code> to answer
+          feature / pricing / partner / city questions. Edit the canonical
+          answer for each category below.
+        </p>
+        {kb === null ? (
+          <p className="callmodal-tip">Loading…</p>
+        ) : (
+          <div className="kb-editor">
+            {[
+              { key: 'hosts',  label: 'Hosts',  hint: 'customer support voice agents, direct listings, operations agents' },
+              { key: 'guests', label: 'Guests', hint: 'booking, finding reservations, in-stay support' },
+              { key: 'faq',    label: 'FAQ',    hint: 'partners, city / government access, anything else' },
+            ].map(({ key, label, hint }) => (
+              <div key={key} className="kb-field">
+                <label htmlFor={`kb-${key}`}>
+                  <strong>{label}</strong> <span className="kb-hint">{hint}</span>
+                </label>
+                <textarea
+                  id={`kb-${key}`}
+                  value={kb[key] || ''}
+                  onChange={(e) => updateKb(key, e.target.value)}
+                  rows={6}
+                />
+              </div>
+            ))}
+            <div className="kb-actions">
+              {kb?.updated_at && (
+                <span className="kb-meta">
+                  Last edit {new Date(kb.updated_at).toLocaleString()} by {kb.updated_by || '—'}
+                </span>
+              )}
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={saveKb}
+                disabled={!kbDirty || kbSaving}
+              >
+                {kbSaving ? 'Saving…' : kbStatus === 'saved' ? '✓ Saved' : 'Save knowledge base'}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       <section className="admin-section">
         <h3>Leads {leads && <span className="admin-count">({leads.length})</span>}</h3>

@@ -523,11 +523,22 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
           <div className="callmodal-pane">
             {status === 'idle' && (
               <div className="callmodal-intro">
-                <p>
-                  {isHost
-                    ? 'Talk to our onboarding agent. They will ask about your place — address, beds, price, amenities — and the form on the right will fill in as you talk. Edit anything by typing.'
-                    : 'Talk to a BnBMesh agent about finding a stay, splitting a trip across listings, or anything about your reservation.'}
-                </p>
+                {isHost ? (
+                  <p>
+                    Talk to our onboarding agent. They'll ask about your place —
+                    address, beds, price, amenities — and the form on the right will
+                    fill in as you talk. Edit anything by typing.
+                  </p>
+                ) : (
+                  <>
+                    <p style={{ marginBottom: 10 }}>Talk to an agent about:</p>
+                    <ul className="callmodal-bullets">
+                      <li><strong>Hosts</strong> — customer support voice agents, direct listings, operations agents</li>
+                      <li><strong>Guests</strong> — booking, finding reservations, in-stay help</li>
+                      <li><strong>FAQ</strong> — partners, city / government access, anything else</li>
+                    </ul>
+                  </>
+                )}
                 <button className="btn btn-primary callmodal-cta" onClick={start}>
                   {isHost ? 'Start onboarding call' : 'Start call'}
                 </button>
