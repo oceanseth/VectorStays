@@ -411,6 +411,14 @@ section { scroll-margin-top: 24px; }
   .foot { flex-direction: column; align-items: flex-start; }
   .foot-built { text-align: left; max-width: 100%; }
 
+  /* Dashboard / admin headers on mobile: shrink the heading + email pill
+     so they fit on one row and "Your listings" stays readable. */
+  .admin-shell { padding: 18px; }
+  .admin-head { gap: 12px; padding-bottom: 12px; margin-bottom: 18px; }
+  .admin-head h2 { font-size: 1.1rem; letter-spacing: -0.01em; }
+  .user-menu-trigger { font-size: 0.74rem; padding: 4px 8px; }
+  .user-menu-label { max-width: 140px; }
+
   /* Modals on mobile: tighter padding + smaller display banner so a tall
      modal body fits on a small phone without horizontal cramping. */
   .callmodal { max-height: 92vh; }
@@ -634,8 +642,34 @@ section { scroll-margin-top: 24px; }
   text-align: left; padding: 10px 14px; background: transparent; border: 0;
   color: var(--fg); cursor: pointer; font-size: 0.92rem;
   transition: background 0.12s ease;
+  text-decoration: none;
 }
 .user-menu-dropdown a:hover, .user-menu-dropdown button:hover { background: rgba(255,255,255,0.05); }
+
+/* Inline user-menu trigger (used on dashboard / admin headers) */
+.user-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  max-width: 260px;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.user-menu-trigger:hover { color: var(--fg); border-color: rgba(255,255,255,0.18); }
+.user-menu-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.user-menu-caret { color: var(--fg-dim); font-size: 0.85em; line-height: 1; }
 
 /* ---------- Host signup ---------- */
 

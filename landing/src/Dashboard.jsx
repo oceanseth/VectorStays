@@ -1,5 +1,46 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from './AuthContext'
+
+/**
+ * Compact user-account button. Shows the user's email/phone as an unobtrusive
+ * top-right pill on every dashboard. Clicking opens a small menu with
+ * "Back to site" and "Sign out" — replaces the always-visible sign-out
+ * button + plain email span pattern that was dominating mobile headers.
+ */
+function UserMenu({ user, signOut }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('touchstart', onDoc)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('touchstart', onDoc)
+    }
+  }, [open])
+  const label = user.email || user.phoneNumber || 'Account'
+  return (
+    <div className="user-menu" ref={ref}>
+      <button
+        className="user-menu-trigger"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <span className="user-menu-label">{label}</span>
+        <span className="user-menu-caret" aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="user-menu-dropdown" role="menu">
+          <a href="/" role="menuitem">← Back to site</a>
+          <button role="menuitem" onClick={() => { setOpen(false); signOut() }}>Sign out</button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 /**
  * Host dashboard at /#dashboard. Shows the signed-in user's listings and
@@ -93,11 +134,7 @@ export default function Dashboard({ onAddListing }) {
     <div className="admin-shell">
       <header className="admin-head">
         <h2>Your listings</h2>
-        <div className="admin-head-right">
-          <span className="admin-who">{user.email || user.phoneNumber}</span>
-          <button className="btn btn-ghost btn-sm" onClick={signOut}>sign out</button>
-          <a className="btn btn-ghost btn-sm" href="/">← site</a>
-        </div>
+        <UserMenu user={user} signOut={signOut} />
       </header>
 
       {error && <p className="demo-error">{error}</p>}
