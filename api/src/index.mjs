@@ -35,6 +35,12 @@ function randomHex(bytes = 16) {
   return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
+function isoDate(offsetDays = 0) {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() + offsetDays)
+  return d.toISOString().slice(0, 10)
+}
+
 // ---------------------------------------------------------------------------
 // Knowledge base (3-category FAQ used by the voice agent and the admin UI)
 // ---------------------------------------------------------------------------
@@ -832,6 +838,14 @@ export const handler = async (event) => {
                   || body?.call?.metadata
                   || {}
     const callerUid = metadata?.firebase_uid || null
+    // For real PSTN calls Vapi supplies the customer's E.164 number on the
+    // call object. For browser-based calls we use the user's verified phone
+    // from metadata. Either way: a phone we can index against.
+    const callerPhone =
+      body?.message?.call?.customer?.number
+      || body?.call?.customer?.number
+      || metadata?.firebase_phone
+      || null
     const results = []
     for (const tc of calls) {
       const name = tc?.function?.name || tc?.name
@@ -853,6 +867,77 @@ export const handler = async (event) => {
           })
           continue
         }
+        if (name === 'lookup_caller_reservations') {
+          // Resolve the caller to a UID via either:
+          //  (a) the signed-in firebase_uid in metadata (browser calls), or
+          //  (b) the inbound phone number against bnbmesh:phone-to-uid:<phone>
+          // Then list their reservations active in a [-1d, +14d] window.
+          const c = await redis()
+          if (!c) {
+            results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'storage offline' }) })
+            continue
+          }
+          let uid = callerUid
+          if (!uid && callerPhone) {
+            const candidates = await c.sMembers(`bnbmesh:phone-to-uid:${callerPhone}`).catch(() => [])
+            if (candidates.length === 1) uid = candidates[0]
+            // If two+ users share a phone (rare but possible), we leave uid
+            // null and let the agent fall through to "ask for confirmation code".
+          }
+          if (!uid) {
+            results.push({
+              toolCallId: tcId,
+              result: JSON.stringify({
+                matched_by: null,
+                reservations: [],
+                hint: 'No account on this phone number. Ask for the reservation confirmation code.',
+              }),
+            })
+            continue
+          }
+          const ids = await c.sMembers(`bnbmesh:user:${uid}:reservations`).catch(() => [])
+          const today = new Date().toISOString().slice(0, 10)
+          const minus1 = isoDate(-1)
+          const plus14 = isoDate(14)
+          const matches = []
+          for (const id of ids) {
+            try {
+              const v = await c.get(`bnbmesh:reservation:${id}`)
+              if (!v) continue
+              const r = JSON.parse(v)
+              if (!r.check_in || !r.check_out) continue
+              // Active window: check-out is today or later, AND check-in is within 14 days from now
+              if (r.check_out >= minus1 && r.check_in <= plus14) {
+                matches.push({
+                  reservation_id: r.id || id,
+                  listing_title: r.listing_title || null,
+                  listing_address: r.listing_address || null,
+                  check_in: r.check_in,
+                  check_out: r.check_out,
+                  guests: r.guests_count || null,
+                  status: r.status || null,
+                })
+              }
+            } catch {}
+          }
+          results.push({
+            toolCallId: tcId,
+            result: JSON.stringify({
+              matched_by: callerUid ? 'signed_in_user' : 'phone_number',
+              caller_phone: callerPhone || null,
+              today,
+              count: matches.length,
+              reservations: matches,
+              hint: matches.length === 0
+                ? 'No active reservations on this account. Ask the caller for their confirmation code, OR offer to take a message for the host.'
+                : matches.length === 1
+                  ? 'Single match — proceed assuming this is the call.'
+                  : 'Multiple matches — ask the caller which listing they are calling about.',
+            }),
+          })
+          continue
+        }
+
         if (name === 'list_my_listings') {
           if (!callerUid) {
             results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'caller is not signed in. Tell the user to sign in first.' }) })
@@ -1115,6 +1200,52 @@ export const handler = async (event) => {
       } catch {}
     }
     return json(200, { hosts })
+  }
+
+  // ---- Self-register / update user record (auth'd) ----------------------
+  // The frontend POSTs here every time AuthContext sees the user change so
+  // the server has an up-to-date view of who's signed in, what their
+  // verified phone is, and what their email is. Side-effect: maintains the
+  // bnbmesh:phone-to-uid:<e164> index that the voice agent's
+  // lookup_caller_reservations tool relies on.
+  if (path === '/api/me' || path === '/me') {
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!claims) return json(401, { error: 'sign in required' })
+    const c = await redis()
+    if (!c) return json(503, { error: 'storage offline' })
+
+    if (method === 'GET') {
+      const v = await c.get(`bnbmesh:user:${claims.sub}`)
+      return json(200, { user: v ? JSON.parse(v) : null })
+    }
+    if (method === 'POST') {
+      const phone = (claims.phone_number || '').trim() || null
+      const email = (claims.email || '').trim().toLowerCase() || null
+      const existingRaw = await c.get(`bnbmesh:user:${claims.sub}`)
+      const existing = existingRaw ? JSON.parse(existingRaw) : null
+
+      // If the phone changed, drop the old index entry first.
+      if (existing?.phone && existing.phone !== phone) {
+        await c.sRem(`bnbmesh:phone-to-uid:${existing.phone}`, claims.sub)
+      }
+
+      const user = {
+        uid: claims.sub,
+        email,
+        phone,
+        email_verified: !!claims.email_verified,
+        phone_verified: !!phone, // Firebase only emits phone_number after SMS verification
+        name: claims.name || existing?.name || null,
+        first_seen_at: existing?.first_seen_at || new Date().toISOString(),
+        last_seen_at: new Date().toISOString(),
+      }
+      await c.set(`bnbmesh:user:${claims.sub}`, JSON.stringify(user))
+      if (phone) {
+        await c.sAdd(`bnbmesh:phone-to-uid:${phone}`, claims.sub)
+      }
+      return json(200, { user })
+    }
+    return json(405, { error: 'method not allowed' })
   }
 
   // ---- Listings I own (auth'd) ------------------------------------------

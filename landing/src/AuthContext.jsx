@@ -23,6 +23,19 @@ export function AuthProvider({ children }) {
     return onAuthStateChanged(auth, (u) => {
       setUser(u)
       setLoading(false)
+      // Register the user with our backend so the phone-to-uid index
+      // is up to date (used by the voice agent's
+      // lookup_caller_reservations tool to match incoming callers).
+      // Fire-and-forget; errors are non-fatal.
+      if (u) {
+        u.getIdToken().then((token) => {
+          fetch('/api/me', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+            body: JSON.stringify({}),
+          }).catch(() => {})
+        }).catch(() => {})
+      }
     })
   }, [])
 
