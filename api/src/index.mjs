@@ -727,6 +727,57 @@ export const handler = async (event) => {
     return json(200, { query: q, stays: (out.results || []).slice(0, 2) })
   }
 
+  // ---- Vapi server-side tools -------------------------------------------
+  // POST /api/vapi/tool — Vapi calls this directly when the assistant
+  // invokes a tool that has a server.url configured. Request body:
+  //   { message: { type: "tool-calls", toolCallList: [{ id, function: { name, arguments } }] } }
+  // Response (Vapi expects):
+  //   { results: [{ toolCallId, result }] }
+  if (path === '/api/vapi/tool' || path === '/vapi/tool') {
+    if (method !== 'POST') return json(405, { error: 'method not allowed' })
+    let body = {}
+    try {
+      body = event.body
+        ? (event.isBase64Encoded ? JSON.parse(Buffer.from(event.body, 'base64').toString()) : JSON.parse(event.body))
+        : {}
+    } catch { return json(400, { error: 'bad json' }) }
+
+    const calls = body?.message?.toolCallList || body?.toolCallList || []
+    const results = []
+    for (const tc of calls) {
+      const name = tc?.function?.name || tc?.name
+      let args = tc?.function?.arguments ?? tc?.arguments ?? {}
+      if (typeof args === 'string') {
+        try { args = JSON.parse(args) } catch { args = {} }
+      }
+      const tcId = tc?.id || tc?.toolCallId
+      try {
+        if (name === 'search_listings') {
+          const out = await searchListings(args?.query || '', { timeoutMs: 2500 })
+          const top = (out.results || []).slice(0, 4).map((x) => ({
+            id: x.id,
+            title: x.title,
+            location: x.location,
+            nightly_price_usd: x.nightlyPrice,
+            cheapest_platform: x.cheapestPlatform,
+            platforms: x.platforms,
+            is_direct: !!x.isDirect,
+          }))
+          // Vapi feeds `result` (string) back to the LLM as a tool message.
+          results.push({
+            toolCallId: tcId,
+            result: JSON.stringify({ source: out.source, results: top }),
+          })
+        } else {
+          results.push({ toolCallId: tcId, result: JSON.stringify({ error: `Unknown tool: ${name}` }) })
+        }
+      } catch (e) {
+        results.push({ toolCallId: tcId, result: JSON.stringify({ error: e.message }) })
+      }
+    }
+    return json(200, { results })
+  }
+
   // ---- Vapi browser-call lifecycle + public viewer ----------------------
   // POST /api/calls/{id}/start  — register a new call (mode, started_at)
   // POST /api/calls/{id}/turn   — append one transcript turn from the browser
