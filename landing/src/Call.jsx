@@ -9,6 +9,15 @@ const Vapi = typeof VapiSDK === 'function' ? VapiSDK : VapiSDK?.default
 
 const VAPI_PUBLIC_KEY = '5c140bc1-303b-495f-88c0-ee5e87baefac'
 
+// Module-level singleton so the underlying Daily/Krisp WebRTC stack is
+// initialized exactly once per page. If we `new Vapi()` more than once,
+// Krisp throws "KrispSDK is duplicated".
+let _vapi = null
+function getVapi() {
+  if (!_vapi) _vapi = new Vapi(VAPI_PUBLIC_KEY)
+  return _vapi
+}
+
 const ASSISTANTS = {
   support: 'c0eea2d1-d2a7-4bb5-bcc2-04d2c988028e',
   host:    '67246d25-8651-41fa-ab44-888c95dc0683',
@@ -184,8 +193,11 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
 
   // ---- Vapi setup -------------------------------------------------------
   useEffect(() => {
-    const vapi = new Vapi(VAPI_PUBLIC_KEY)
+    // Reuse the page-level Vapi instance to keep Krisp from double-initializing.
+    const vapi = getVapi()
     vapiRef.current = vapi
+    // Clear any stale listeners from a previous Call modal mount.
+    try { vapi.removeAllListeners?.() } catch {}
 
     vapi.on('call-start', async () => {
       setStatus('live')
@@ -229,12 +241,14 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
         return
       }
       restartCountRef.current += 1
-      // Brief debounce in case multiple end events fire.
+      // Brief debounce so the underlying Daily/Krisp transport can finish
+      // tearing down the previous call before we open a new one. Going below
+      // ~400ms can race the cleanup and re-trigger the Krisp duplicate error.
       clearTimeout(restartTimerRef.current)
       restartTimerRef.current = setTimeout(() => {
         if (userEndedRef.current) return
         restartWithContext()
-      }, 250)
+      }, 600)
     })
 
     vapi.on('error', (e) => {
@@ -310,7 +324,13 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
       }
     })
 
-    return () => { try { vapi.stop() } catch {} }
+    return () => {
+      // Don't destroy the singleton — just hang up and detach our listeners
+      // so the next Call modal mount can wire its own.
+      try { vapi.stop() } catch {}
+      try { vapi.removeAllListeners?.() } catch {}
+      clearTimeout(restartTimerRef.current)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callId, mode])
 
