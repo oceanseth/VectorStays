@@ -30,7 +30,21 @@ export function AuthProvider({ children }) {
     user,
     loading,
     isAdmin: !!(user && user.email && ADMIN_EMAILS.has(user.email.toLowerCase())),
-    signOut: () => fbSignOut(auth),
+    // Sign out everywhere drops the user back on the public homepage so they
+    // don't land on an empty admin/dashboard view that immediately redirects.
+    signOut: async () => {
+      try { await fbSignOut(auth) } catch {}
+      // Clear any deep-link hash so AppShell routes to 'home'.
+      if (typeof window !== 'undefined') {
+        if (window.location.hash) {
+          window.location.hash = ''
+        } else {
+          // Force a re-render in case the route is already 'home' but the
+          // signed-out state needs to take effect.
+          window.dispatchEvent(new HashChangeEvent('hashchange'))
+        }
+      }
+    },
     getIdToken: async () => (user ? await user.getIdToken() : null),
   }
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
