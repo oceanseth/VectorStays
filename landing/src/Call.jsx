@@ -159,7 +159,11 @@ function ListingForm({ values, onChange, recentlyUpdated }) {
 // ---------------------------------------------------------------------------
 
 export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRequest, onAddListingRequest, onClose }) {
-  const { getIdToken } = useAuth()
+  const { user, getIdToken } = useAuth()
+  // Mirror the auth user into a ref so callbacks (start, restartWithContext)
+  // pick up the latest value without stale closures.
+  const currentUserRef = useRef(null)
+  useEffect(() => { currentUserRef.current = user }, [user])
   const [status, setStatus] = useState('idle') // idle | connecting | live | ended | error
   const [transcript, setTranscript] = useState([])
   const [callId] = useState(makeCallId)
@@ -443,11 +447,17 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
     setStatus('connecting')
     setError(null)
     try {
-      // Tools + system prompt live on the assistant itself (PATCH'd via the
-      // Vapi API). Overrides only carry the bnbmesh call id so the webhook
-      // can join up to the right Redis record.
+      // Tools + system prompt live on the assistant (PATCH'd via the Vapi
+      // API). Metadata travels with every server tool-call so the Lambda
+      // knows which signed-in user is on the line — needed for
+      // list_my_listings and edit_listing to enforce ownership.
       await vapiRef.current.start(ASSISTANTS[mode], {
-        metadata: { bnbmesh_call_id: callId, mode },
+        metadata: {
+          bnbmesh_call_id: callId,
+          mode,
+          firebase_uid:   currentUserRef.current?.uid   || null,
+          firebase_email: currentUserRef.current?.email || null,
+        },
       })
     } catch (e) {
       const raw = e?.message ?? e
@@ -473,7 +483,13 @@ export default function Call({ mode = 'support', onSignInRequest, onBecomeHostRe
       const recent = transcriptRef2.current.slice(-12)  // last ~6 exchanges
       const summary = recent.map((t) => `${t.role === 'assistant' ? 'agent' : 'user'}: ${t.text}`).join('\n')
       const overrides = {
-        metadata: { bnbmesh_call_id: callId, mode, restart: true },
+        metadata: {
+          bnbmesh_call_id: callId,
+          mode,
+          restart: true,
+          firebase_uid:   currentUserRef.current?.uid   || null,
+          firebase_email: currentUserRef.current?.email || null,
+        },
       }
       if (recent.length > 0) {
         // The voice channel briefly dropped. Prepend a system note to the

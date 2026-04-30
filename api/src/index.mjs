@@ -824,6 +824,14 @@ export const handler = async (event) => {
     } catch { return json(400, { error: 'bad json' }) }
 
     const calls = body?.message?.toolCallList || body?.toolCallList || []
+    // Vapi forwards the metadata we set in vapi.start({ metadata: ... })
+    // on each tool-call payload. Use it to identify the signed-in user
+    // for tools that require ownership (list_my_listings, edit_listing).
+    const metadata = body?.message?.call?.assistantOverrides?.metadata
+                  || body?.message?.call?.metadata
+                  || body?.call?.metadata
+                  || {}
+    const callerUid = metadata?.firebase_uid || null
     const results = []
     for (const tc of calls) {
       const name = tc?.function?.name || tc?.name
@@ -845,6 +853,87 @@ export const handler = async (event) => {
           })
           continue
         }
+        if (name === 'list_my_listings') {
+          if (!callerUid) {
+            results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'caller is not signed in. Tell the user to sign in first.' }) })
+            continue
+          }
+          const c = await redis()
+          if (!c) { results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'storage offline' }) }); continue }
+          const ids = await c.sMembers(`bnbmesh:host:${callerUid}:listings`).catch(() => [])
+          const items = []
+          for (const id of ids) {
+            try {
+              const v = await c.get(`bnbmesh:listing:${id}`)
+              if (v) {
+                const l = JSON.parse(v)
+                items.push({
+                  id: l.id, title: l.title, address: l.address,
+                  status: l.status, bedrooms: l.bedrooms, nightlyPrice: l.nightlyPrice,
+                  customer_support_enabled: !!l.customer_support_enabled,
+                })
+              }
+            } catch {}
+          }
+          results.push({ toolCallId: tcId, result: JSON.stringify({ listings: items }) })
+          continue
+        }
+
+        if (name === 'edit_listing') {
+          if (!callerUid) {
+            results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'caller is not signed in' }) })
+            continue
+          }
+          const listingId = String(args?.listing_id || '')
+          const field = String(args?.field || '')
+          const value = args?.value
+          const allowed = new Set([
+            'address','title','description','propertyType','bedrooms','bathrooms','maxGuests',
+            'amenities','nightlyPrice','cleaningFee','minNights','checkIn','checkOut','houseRules',
+          ])
+          if (!listingId || !field || !allowed.has(field)) {
+            results.push({ toolCallId: tcId, result: JSON.stringify({ error: `invalid input — field must be one of: ${[...allowed].join(', ')}` }) })
+            continue
+          }
+          const c = await redis()
+          if (!c) { results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'storage offline' }) }); continue }
+          const raw = await c.get(`bnbmesh:listing:${listingId}`)
+          if (!raw) { results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'listing not found' }) }); continue }
+          const listing = JSON.parse(raw)
+          if (listing.host_uid && listing.host_uid !== callerUid) {
+            results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'this listing belongs to another host' }) })
+            continue
+          }
+          // Type-coerce numeric fields; arrays for amenities; otherwise string.
+          let coerced = value
+          if (['bedrooms','bathrooms','maxGuests','nightlyPrice','cleaningFee','minNights'].includes(field)) {
+            const n = Number(value)
+            if (Number.isNaN(n)) { results.push({ toolCallId: tcId, result: JSON.stringify({ error: 'value must be a number' }) }); continue }
+            coerced = n
+          } else if (field === 'amenities') {
+            coerced = Array.isArray(value) ? value : String(value).split(/[,;]\s*/).filter(Boolean)
+          } else {
+            coerced = String(value)
+          }
+          listing[field] = coerced
+          // Recompute is_complete (address + price); demote to draft if needed.
+          const addressOk = !!(listing.address && /,\s*[A-Za-z]{2,}/.test(listing.address))
+          const priceOk = !!(listing.nightlyPrice && Number(listing.nightlyPrice) > 0)
+          listing.is_complete = !!(addressOk && priceOk)
+          if (listing.status === 'active' && !listing.is_complete) listing.status = 'draft'
+          listing.updated_at = new Date().toISOString()
+          await c.set(`bnbmesh:listing:${listingId}`, JSON.stringify(listing))
+          results.push({ toolCallId: tcId, result: JSON.stringify({
+            ok: true,
+            listing_id: listingId,
+            field,
+            new_value: coerced,
+            is_complete: listing.is_complete,
+            status: listing.status,
+          }) })
+          continue
+        }
+
         if (name === 'search_listings') {
           const out = await searchListings(args?.query || '', { timeoutMs: 2500 })
           const top = (out.results || []).slice(0, 4).map((x) => ({
@@ -1115,6 +1204,30 @@ export const handler = async (event) => {
       } catch {}
     }
     return json(200, { listings })
+  }
+
+  // ---- Admin: directly toggle a listing's customer_support_enabled flag
+  // Bypasses Stripe checkout; intended for ops + comp / promo cases.
+  if (path.match(/^\/api\/admin\/listings\/[A-Za-z0-9_-]+\/(enable|disable)-support$/)) {
+    if (method !== 'POST') return json(405, { error: 'method not allowed' })
+    const claims = await verifyFirebaseIdToken(event.headers?.authorization || event.headers?.Authorization)
+    if (!isAdminClaims(claims)) return json(403, { error: 'admin only' })
+    const m = path.match(/^\/api\/admin\/listings\/([A-Za-z0-9_-]+)\/(enable|disable)-support$/)
+    const [, listingId, op] = m
+    const c = await redis()
+    if (!c) return json(503, { error: 'storage not configured' })
+    const raw = await c.get(`bnbmesh:listing:${listingId}`)
+    if (!raw) return json(404, { error: 'listing not found' })
+    const listing = JSON.parse(raw)
+    listing.customer_support_enabled = (op === 'enable')
+    listing.support_updated_at = new Date().toISOString()
+    listing.support_set_by = claims.email || claims.sub
+    if (op === 'enable' && listing.status !== 'active') {
+      listing.status = 'active'
+      listing.activated_at = listing.activated_at || new Date().toISOString()
+    }
+    await c.set(`bnbmesh:listing:${listingId}`, JSON.stringify(listing))
+    return json(200, { ok: true, listing })
   }
 
   // ---- Per-listing activate / deactivate --------------------------------

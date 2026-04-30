@@ -6,11 +6,16 @@ import { useAuth } from './AuthContext'
  * lets them enable AI Customer Support per listing ($20/mo each) via
  * Stripe Checkout.
  */
+// The shared support number guests can dial to reach the BnBMesh AI agent.
+// Hosts paste this on their Airbnb / VRBO listings.
+const SUPPORT_PHONE_NUMBER = '+1 (805) 678-8907'
+
 export default function Dashboard({ onAddListing }) {
-  const { user, loading, getIdToken, signOut } = useAuth()
+  const { user, loading, isAdmin, getIdToken, signOut } = useAuth()
   const [listings, setListings] = useState(null)
   const [error, setError] = useState(null)
   const [busyId, setBusyId] = useState(null)
+  const [phoneCopied, setPhoneCopied] = useState(false)
 
   useEffect(() => {
     if (loading) return
@@ -33,6 +38,18 @@ export default function Dashboard({ onAddListing }) {
     setBusyId(listingId); setError(null)
     try {
       const token = await getIdToken()
+      // Admins skip Stripe and flip the flag directly. Useful for ops, comps,
+      // and the "let me test the call flow without paying $20" workflow.
+      if (isAdmin) {
+        const r = await fetch(`/api/admin/listings/${listingId}/enable-support`, {
+          method: 'POST',
+          headers: { authorization: `Bearer ${token}` },
+        })
+        const j = await r.json()
+        if (!r.ok) { setError(j.error || `HTTP ${r.status}`); return }
+        setListings((prev) => (prev || []).map((l) => l.id === listingId ? j.listing : l))
+        return
+      }
       const r = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
@@ -47,6 +64,19 @@ export default function Dashboard({ onAddListing }) {
       setBusyId(null)
     }
   }
+
+  const copyPhone = async () => {
+    try {
+      await navigator.clipboard.writeText(SUPPORT_PHONE_NUMBER)
+      setPhoneCopied(true)
+      setTimeout(() => setPhoneCopied(false), 1800)
+    } catch {}
+  }
+
+  // Show the support-number panel only when the host has at least one listing
+  // with customer support enabled (otherwise it's a "what number?" mystery
+  // that doesn't apply to them yet).
+  const supportEnabledCount = (listings || []).filter((l) => l.customer_support_enabled).length
 
   const setActive = async (listingId, action) => {
     setBusyId(listingId); setError(null)
@@ -96,6 +126,25 @@ export default function Dashboard({ onAddListing }) {
       </header>
 
       {error && <p className="demo-error">{error}</p>}
+
+      {supportEnabledCount > 0 && (
+        <section className="admin-section support-number-panel">
+          <div className="support-number-row">
+            <div>
+              <div className="support-number-label">Your shared support number</div>
+              <div className="support-number-value">{SUPPORT_PHONE_NUMBER}</div>
+              <div className="support-number-hint">
+                Paste this on your Airbnb / VRBO listing as the contact number.
+                Guests calling it reach the BnBMesh AI agent, who identifies them
+                and texts you when they need a human.
+              </div>
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={copyPhone}>
+              {phoneCopied ? 'Copied' : 'Copy number'}
+            </button>
+          </div>
+        </section>
+      )}
 
       <section className="admin-section">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -158,8 +207,13 @@ export default function Dashboard({ onAddListing }) {
                         className="btn btn-primary btn-sm"
                         onClick={() => enableSupport(l.id)}
                         disabled={busyId === l.id}
+                        title={isAdmin ? 'Admin shortcut — skips Stripe' : 'Opens Stripe Checkout for $20/mo'}
                       >
-                        {busyId === l.id ? 'Starting…' : 'Enable AI Customer Support — $20/mo'}
+                        {busyId === l.id
+                          ? 'Starting…'
+                          : isAdmin
+                            ? 'Enable AI Customer Support (admin)'
+                            : 'Enable AI Customer Support — $20/mo'}
                       </button>
                     )}
                     {isActive && supportOn && (

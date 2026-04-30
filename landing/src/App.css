@@ -788,6 +788,50 @@ section { scroll-margin-top: 24px; }
 }
 .kb-modal-textarea:focus { outline: none; border-color: var(--accent); }
 
+/* ---------- Shared support-number panel ---------- */
+
+.support-number-panel {
+  background: linear-gradient(135deg, rgba(92,235,213,0.07), rgba(184,139,255,0.05));
+  border: 1px solid rgba(92,235,213,0.32);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.support-number-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.support-number-label {
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.support-number-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.support-number-hint {
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  margin-top: 6px;
+  line-height: 1.45;
+  max-width: 600px;
+}
+@media (max-width: 640px) {
+  .support-number-row { flex-direction: column; align-items: flex-start; }
+  .support-number-value { font-size: 1.2rem; }
+}
+
 /* ---------- Listings dashboard ---------- */
 
 .listings-grid {
