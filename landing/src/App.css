@@ -737,32 +737,56 @@ section { scroll-margin-top: 24px; }
 .admin-table tr:last-child td { border-bottom: 0; }
 .admin-table a { color: var(--accent); }
 
-/* ---------- Knowledge-base editor ---------- */
+/* ---------- Knowledge-base editor (card list + modal) ---------- */
 
-.kb-editor { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
-.kb-field { display: flex; flex-direction: column; gap: 6px; }
-.kb-field label { font-size: 0.95rem; }
-.kb-hint { color: var(--fg-dim); font-weight: 400; font-size: 0.82rem; margin-left: 4px; }
-.kb-field textarea {
+.kb-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.kb-card {
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  color: var(--fg);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+  position: relative;
+  font: inherit;
+}
+.kb-card:hover { border-color: rgba(92,235,213,0.45); transform: translateY(-1px); }
+.kb-card.is-fresh { border-color: rgba(92,235,213,0.7); box-shadow: 0 0 24px rgba(92,235,213,0.18); }
+.kb-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.kb-card-head strong { font-size: 1rem; letter-spacing: -0.005em; }
+.kb-card-len { color: var(--fg-dim); font-size: 0.78rem; letter-spacing: 0.04em; }
+.kb-card-hint { color: var(--fg-muted); font-size: 0.84rem; margin: 0 0 6px; }
+.kb-card-preview {
+  color: var(--fg-dim); font-size: 0.85rem; line-height: 1.5; margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kb-card-flash {
+  position: absolute; top: 12px; right: 14px;
+  font-size: 0.75rem; color: var(--accent);
+  letter-spacing: 0.04em;
+  animation: prompt-slide-in 0.25s ease-out;
+}
+
+.kb-meta { color: var(--fg-dim); font-size: 0.78rem; }
+
+.kb-modal-textarea {
   width: 100%; box-sizing: border-box;
-  background: rgba(255,255,255,0.04);
+  background: rgba(0,0,0,0.28);
   border: 1px solid var(--card-border);
   color: var(--fg);
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 8px;
-  font-size: 0.92rem;
+  font-size: 0.93rem;
   font-family: inherit;
   resize: vertical;
-  min-height: 110px;
-  line-height: 1.5;
+  min-height: 240px;
+  line-height: 1.55;
 }
-.kb-field textarea:focus { outline: none; border-color: var(--accent); }
-.kb-actions {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-  padding-top: 4px;
-}
-.kb-meta { color: var(--fg-dim); font-size: 0.78rem; }
+.kb-modal-textarea:focus { outline: none; border-color: var(--accent); }
 
 /* ---------- Listings dashboard ---------- */
 

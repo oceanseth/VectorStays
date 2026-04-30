@@ -10,10 +10,17 @@ export default function Admin() {
   const [leads, setLeads] = useState(null)
   const [hosts, setHosts] = useState(null)
   const [kb, setKb] = useState(null)
-  const [kbDirty, setKbDirty] = useState(false)
+  const [editingKey, setEditingKey] = useState(null) // 'hosts' | 'guests' | 'faq' | null
+  const [editorDraft, setEditorDraft] = useState('')
   const [kbSaving, setKbSaving] = useState(false)
-  const [kbStatus, setKbStatus] = useState(null) // null | 'saved' | 'failed'
+  const [kbFlash, setKbFlash] = useState(null) // { key, ts }
   const [error, setError] = useState(null)
+
+  const KB_GUIDES = [
+    { key: 'hosts',  label: 'Hosts',  hint: 'What the agent says about features for existing hosts (voice support, direct listings, ops agents).' },
+    { key: 'guests', label: 'Guests', hint: 'What the agent says to travelers about searching, booking, and getting in-stay help.' },
+    { key: 'faq',    label: 'FAQ',    hint: 'Partners, cities/governments, pricing, anything else not covered above.' },
+  ]
 
   useEffect(() => {
     let stopped = false
@@ -38,29 +45,32 @@ export default function Admin() {
     return () => { stopped = true }
   }, [isAdmin, getIdToken])
 
-  const updateKb = (key, value) => {
-    setKb((prev) => ({ ...(prev || {}), [key]: value }))
-    setKbDirty(true)
-    setKbStatus(null)
+  const openEditor = (key) => {
+    setEditingKey(key)
+    setEditorDraft((kb && kb[key]) || '')
   }
-
-  const saveKb = async () => {
-    setKbSaving(true); setKbStatus(null)
+  const closeEditor = () => {
+    setEditingKey(null)
+    setEditorDraft('')
+  }
+  const saveEditor = async () => {
+    if (!editingKey) return
+    setKbSaving(true)
     try {
+      const next = { ...(kb || {}), [editingKey]: editorDraft }
       const token = await getIdToken()
       const r = await fetch('/api/admin/kb', {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-        body: JSON.stringify({ kb }),
+        body: JSON.stringify({ kb: next }),
       })
       const j = await r.json()
       if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`)
       setKb(j.kb)
-      setKbDirty(false)
-      setKbStatus('saved')
-      setTimeout(() => setKbStatus(null), 1800)
+      setKbFlash({ key: editingKey, ts: Date.now() })
+      setTimeout(() => setKbFlash(null), 1800)
+      closeEditor()
     } catch (e) {
-      setKbStatus('failed')
       setError(e.message)
     } finally {
       setKbSaving(false)
@@ -95,50 +105,82 @@ export default function Admin() {
       {error && <p className="demo-error">{error}</p>}
 
       <section className="admin-section">
-        <h3>Knowledge base</h3>
-        <p className="callmodal-hint" style={{ marginTop: 0 }}>
-          The voice agent calls <code>get_kb(category)</code> to answer
-          feature / pricing / partner / city questions. Edit the canonical
-          answer for each category below.
+        <h3>Voice agent knowledge</h3>
+        <p className="callmodal-hint" style={{ marginTop: 0, marginBottom: 14 }}>
+          The voice agent calls <code>get_kb(category)</code> to answer feature,
+          pricing, partner, and city questions. Click a guide to edit what the
+          agent will read out.
         </p>
         {kb === null ? (
           <p className="callmodal-tip">Loading…</p>
         ) : (
-          <div className="kb-editor">
-            {[
-              { key: 'hosts',  label: 'Hosts',  hint: 'customer support voice agents, direct listings, operations agents' },
-              { key: 'guests', label: 'Guests', hint: 'booking, finding reservations, in-stay support' },
-              { key: 'faq',    label: 'FAQ',    hint: 'partners, city / government access, anything else' },
-            ].map(({ key, label, hint }) => (
-              <div key={key} className="kb-field">
-                <label htmlFor={`kb-${key}`}>
-                  <strong>{label}</strong> <span className="kb-hint">{hint}</span>
-                </label>
-                <textarea
-                  id={`kb-${key}`}
-                  value={kb[key] || ''}
-                  onChange={(e) => updateKb(key, e.target.value)}
-                  rows={6}
-                />
-              </div>
-            ))}
-            <div className="kb-actions">
-              {kb?.updated_at && (
-                <span className="kb-meta">
-                  Last edit {new Date(kb.updated_at).toLocaleString()} by {kb.updated_by || '—'}
-                </span>
-              )}
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={saveKb}
-                disabled={!kbDirty || kbSaving}
-              >
-                {kbSaving ? 'Saving…' : kbStatus === 'saved' ? '✓ Saved' : 'Save knowledge base'}
-              </button>
-            </div>
-          </div>
+          <ul className="kb-list">
+            {KB_GUIDES.map(({ key, label, hint }) => {
+              const content = (kb[key] || '').trim()
+              const preview = content ? (content.length > 180 ? content.slice(0, 180).trim() + '…' : content) : '— empty —'
+              const flashed = kbFlash?.key === key
+              return (
+                <li key={key}>
+                  <button
+                    className={`kb-card ${flashed ? 'is-fresh' : ''}`}
+                    onClick={() => openEditor(key)}
+                  >
+                    <div className="kb-card-head">
+                      <strong>{label}</strong>
+                      <span className="kb-card-len">{content.length} chars</span>
+                    </div>
+                    <p className="kb-card-hint">{hint}</p>
+                    <p className="kb-card-preview">{preview}</p>
+                    {flashed && <span className="kb-card-flash">✓ saved</span>}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {kb?.updated_at && (
+          <p className="kb-meta" style={{ marginTop: 12 }}>
+            Last edit {new Date(kb.updated_at).toLocaleString()} by {kb.updated_by || '—'}
+          </p>
         )}
       </section>
+
+      {editingKey && (
+        <div className="callmodal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) closeEditor() }}>
+          <div className="callmodal" style={{ maxWidth: 720 }}>
+            <div className="callmodal-head">
+              <h3>Edit “{KB_GUIDES.find((g) => g.key === editingKey)?.label}” guide</h3>
+              <button className="callmodal-close" onClick={closeEditor} aria-label="Close">×</button>
+            </div>
+            <div className="callmodal-body">
+              <p className="callmodal-hint" style={{ marginTop: 0, marginBottom: 12 }}>
+                {KB_GUIDES.find((g) => g.key === editingKey)?.hint}
+              </p>
+              <textarea
+                className="kb-modal-textarea"
+                value={editorDraft}
+                onChange={(e) => setEditorDraft(e.target.value)}
+                rows={14}
+                autoFocus
+              />
+              <p className="kb-meta" style={{ marginTop: 6 }}>
+                {editorDraft.length} / 8000 chars
+              </p>
+              {error && <p className="disclaimer-error">{error}</p>}
+              <div className="callmodal-actions">
+                <button className="btn btn-ghost btn-sm" onClick={closeEditor} disabled={kbSaving}>Cancel</button>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={saveEditor}
+                  disabled={kbSaving || editorDraft === (kb?.[editingKey] || '')}
+                >
+                  {kbSaving ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="admin-section">
         <h3>Leads {leads && <span className="admin-count">({leads.length})</span>}</h3>
