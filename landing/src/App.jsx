@@ -7,6 +7,7 @@ import SignInModal from './SignInModal'
 import HostSignup from './HostSignup'
 import Admin from './Admin'
 import Dashboard from './Dashboard'
+import UserMenu from './UserMenu'
 import './App.css'
 
 const MCP_URL = 'https://bnbmesh.ai/api/mcp'
@@ -52,9 +53,8 @@ const PhoneIcon = () => (
   </svg>
 )
 
-function Nav({ onTalk, onHost, onSignIn }) {
-  const { user, isAdmin, signOut } = useAuth()
-  const [menuOpen, setMenuOpen] = useState(false)
+function Nav({ onTalk, onSignIn }) {
+  const { user } = useAuth()
   return (
     <nav className="nav">
       <a className="logo" href="/">
@@ -67,21 +67,8 @@ function Nav({ onTalk, onHost, onSignIn }) {
         <button className="btn btn-ghost btn-icon" onClick={onTalk}>
           <PhoneIcon /> Support
         </button>
-        {!user ? (
+        {!user && (
           <button className="btn btn-ghost" onClick={onSignIn}>Login</button>
-        ) : (
-          <div className="user-menu">
-            <button className="btn btn-ghost" onClick={() => setMenuOpen((v) => !v)}>
-              {user.email || user.phoneNumber || 'Account'} ▾
-            </button>
-            {menuOpen && (
-              <div className="user-menu-dropdown" onMouseLeave={() => setMenuOpen(false)}>
-                <a href="#dashboard" onClick={() => setMenuOpen(false)}>My listings</a>
-                {isAdmin && <a href="#admin" onClick={() => setMenuOpen(false)}>Admin</a>}
-                <button onClick={() => { setMenuOpen(false); signOut() }}>Sign out</button>
-              </div>
-            )}
-          </div>
         )}
       </div>
     </nav>
@@ -335,7 +322,7 @@ function Footer() {
 }
 
 function AppShell() {
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, signOut } = useAuth()
   const [callMode, setCallMode] = useState(null) // null | 'support' | 'host'
   const [viewCallId, setViewCallId] = useState(null)
   const [route, setRoute] = useState('home') // home | admin | become-host | dashboard
@@ -371,15 +358,24 @@ function AppShell() {
     return () => window.removeEventListener('hashchange', sync)
   }, [])
 
+  // Top-right account pill — rendered on every signed-in surface so the
+  // user can navigate from anywhere. Lives above whatever the route renders.
+  const topBar = user ? (
+    <div className="user-topbar">
+      <UserMenu user={user} signOut={signOut} />
+    </div>
+  ) : null
+
   if (viewCallId) {
     return <CallViewer callId={viewCallId} onClose={() => { window.location.hash = '' }} />
   }
   if (route === 'admin') {
-    return <Admin />
+    return <>{topBar}<Admin /></>
   }
   if (route === 'dashboard') {
     return (
       <>
+        {topBar}
         <Dashboard onAddListing={() => setCallMode('host')} />
         {callMode && (
           <Call
@@ -399,6 +395,7 @@ function AppShell() {
 
   return (
     <>
+      {topBar}
       <Nav
         onTalk={() => setCallMode('support')}
         onHost={() => { window.location.hash = '#become-host' }}

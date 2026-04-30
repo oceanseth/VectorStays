@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
-import UserMenu from './UserMenu'
 
 /**
  * Admin dashboard at /#admin. Server-side admin allowlist enforced too —
@@ -54,9 +53,6 @@ export default function Admin() {
 
   return (
     <div className="admin-shell">
-      <div className="admin-topbar">
-        <UserMenu user={user} signOut={signOut} />
-      </div>
       <header className="admin-head">
         <h2>BnBMesh admin</h2>
       </header>

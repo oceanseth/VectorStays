@@ -415,9 +415,9 @@ section { scroll-margin-top: 24px; }
   /* Dashboard / admin headers on mobile: tighter padding, top-right pill
      stays right-anchored with truncated label so it never overflows. */
   .admin-shell { padding: 8px 16px 24px; }
-  .admin-topbar { padding: 4px 0 8px; }
-  .admin-topbar .user-menu-trigger { font-size: 0.68rem; padding: 3px 7px; }
-  .admin-topbar .user-menu-label { max-width: 130px; }
+  .user-topbar { padding: 4px 0 8px; }
+  .user-topbar .user-menu-trigger { font-size: 0.68rem; padding: 3px 7px; }
+  .user-topbar .user-menu-label { max-width: 130px; }
   .admin-head { gap: 12px; padding-bottom: 12px; margin-bottom: 18px; }
   .admin-head h2 { font-size: 1.1rem; letter-spacing: -0.01em; }
 
@@ -689,21 +689,25 @@ section { scroll-margin-top: 24px; }
 /* ---------- Admin page ---------- */
 
 .admin-shell {
-  max-width: 1080px; margin: 0 auto; padding: 12px 32px 32px;
+  max-width: 1080px; margin: 0 auto; padding: 4px 32px 32px;
   min-height: 100vh; color: var(--fg);
 }
-/* Top-right account pill on its own row above the page heading. */
-.admin-topbar {
+/* Top-right account pill on its own row above the page content.
+   Used by the homepage (above the nav), the dashboard, and the admin
+   page — every signed-in surface gets the same anchored pill. */
+.user-topbar {
+  max-width: var(--max);
+  margin: 0 auto;
   display: flex;
   justify-content: flex-end;
-  padding: 4px 0 12px;
+  padding: 8px 32px 0;
 }
-.admin-topbar .user-menu-trigger {
+.user-topbar .user-menu-trigger {
   font-size: 0.72rem;
   padding: 4px 8px;
   color: var(--fg-dim);
 }
-.admin-topbar .user-menu-label { max-width: 180px; }
+.user-topbar .user-menu-label { max-width: 180px; }
 
 .admin-head {
   display: flex; justify-content: space-between; align-items: center;

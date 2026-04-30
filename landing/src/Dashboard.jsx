@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
-import UserMenu from './UserMenu'
 
 /**
  * Host dashboard at /#dashboard. Shows the signed-in user's listings and
@@ -92,9 +91,6 @@ export default function Dashboard({ onAddListing }) {
 
   return (
     <div className="admin-shell">
-      <div className="admin-topbar">
-        <UserMenu user={user} signOut={signOut} />
-      </div>
       <header className="admin-head">
         <h2>Your listings</h2>
       </header>
