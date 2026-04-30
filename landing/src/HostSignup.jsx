@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
 import SignInModal from './SignInModal'
 
@@ -6,16 +6,35 @@ import SignInModal from './SignInModal'
  * "Get started as a host" — free signup. Once signed in, the visitor lands
  * on /#dashboard where they can add listings and (optionally) enable
  * customer support per listing for $20/mo each.
+ *
+ * If the user was already signed in when this modal opened, they go to the
+ * dashboard with one click. If not, the sign-in modal opens; the moment
+ * sign-in succeeds we route them straight to the dashboard — no extra
+ * "Go to dashboard" tap.
  */
 export default function HostSignup({ onClose }) {
   const { user } = useAuth()
   const [showSignIn, setShowSignIn] = useState(false)
+  const [signInRequested, setSignInRequested] = useState(false)
 
   const proceed = () => {
-    if (!user) { setShowSignIn(true); return }
+    if (!user) {
+      setSignInRequested(true)
+      setShowSignIn(true)
+      return
+    }
     window.location.hash = '#dashboard'
     onClose?.()
   }
+
+  // Auto-route to dashboard the moment Firebase Auth confirms the sign-in.
+  // Skips the "now click Go to Dashboard" intermediate state.
+  useEffect(() => {
+    if (user && signInRequested) {
+      window.location.hash = '#dashboard'
+      onClose?.()
+    }
+  }, [user, signInRequested, onClose])
 
   return (
     <div className="callmodal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose?.() }}>
