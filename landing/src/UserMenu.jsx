@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAuth } from './AuthContext'
 
 /**
  * Compact user-account button. Shows the user's email/phone as an unobtrusive
- * top-right pill on dashboards. Clicking opens a small menu with "Back to
- * site" and "Sign out". Closes on outside click/touch.
+ * top-right pill on dashboards. Clicking opens a small menu with navigation
+ * links + "Sign out". Closes on outside click/touch.
  */
 export default function UserMenu({ user, signOut }) {
+  const { isAdmin } = useAuth()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -20,6 +22,7 @@ export default function UserMenu({ user, signOut }) {
     }
   }, [open])
 
+  const close = () => setOpen(false)
   const label = user.email || user.phoneNumber || 'Account'
   return (
     <div className="user-menu" ref={ref}>
@@ -34,8 +37,10 @@ export default function UserMenu({ user, signOut }) {
       </button>
       {open && (
         <div className="user-menu-dropdown" role="menu">
-          <a href="/" role="menuitem">← Back to site</a>
-          <button role="menuitem" onClick={() => { setOpen(false); signOut() }}>Sign out</button>
+          <a href="/" role="menuitem" onClick={close}>← Back to site</a>
+          <a href="#dashboard" role="menuitem" onClick={close}>My listings</a>
+          {isAdmin && <a href="#admin" role="menuitem" onClick={close}>Admin</a>}
+          <button role="menuitem" onClick={() => { close(); signOut() }}>Sign out</button>
         </div>
       )}
     </div>

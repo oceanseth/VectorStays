@@ -335,10 +335,26 @@ function Footer() {
 }
 
 function AppShell() {
+  const { user, isAdmin } = useAuth()
   const [callMode, setCallMode] = useState(null) // null | 'support' | 'host'
   const [viewCallId, setViewCallId] = useState(null)
-  const [route, setRoute] = useState('home') // home | admin | become-host
+  const [route, setRoute] = useState('home') // home | admin | become-host | dashboard
   const [showSignIn, setShowSignIn] = useState(false)
+  // Set when the user opens the modal via the nav "Login" button (vs. via
+  // Become-a-Host, which has its own routing). Used to send admins straight
+  // to /#admin once auth resolves.
+  const [navLoginIntent, setNavLoginIntent] = useState(false)
+
+  // After a nav-triggered login finishes (user transitions from null → set),
+  // route admins to /#admin. Non-admins stay where they were.
+  useEffect(() => {
+    if (user && navLoginIntent) {
+      setNavLoginIntent(false)
+      if (isAdmin) {
+        window.location.hash = '#admin'
+      }
+    }
+  }, [user, isAdmin, navLoginIntent])
 
   useEffect(() => {
     const sync = () => {
@@ -386,7 +402,7 @@ function AppShell() {
       <Nav
         onTalk={() => setCallMode('support')}
         onHost={() => { window.location.hash = '#become-host' }}
-        onSignIn={() => setShowSignIn(true)}
+        onSignIn={() => { setNavLoginIntent(true); setShowSignIn(true) }}
       />
       <Hero
         onTalk={() => setCallMode('support')}
