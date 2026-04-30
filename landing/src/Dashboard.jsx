@@ -92,9 +92,11 @@ export default function Dashboard({ onAddListing }) {
 
   return (
     <div className="admin-shell">
+      <div className="admin-topbar">
+        <UserMenu user={user} signOut={signOut} />
+      </div>
       <header className="admin-head">
         <h2>Your listings</h2>
-        <UserMenu user={user} signOut={signOut} />
       </header>
 
       {error && <p className="demo-error">{error}</p>}

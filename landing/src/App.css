@@ -412,13 +412,14 @@ section { scroll-margin-top: 24px; }
   .foot { flex-direction: column; align-items: flex-start; }
   .foot-built { text-align: left; max-width: 100%; }
 
-  /* Dashboard / admin headers on mobile: shrink the heading + email pill
-     so they fit on one row and "Your listings" stays readable. */
-  .admin-shell { padding: 18px; }
+  /* Dashboard / admin headers on mobile: tighter padding, top-right pill
+     stays right-anchored with truncated label so it never overflows. */
+  .admin-shell { padding: 8px 16px 24px; }
+  .admin-topbar { padding: 4px 0 8px; }
+  .admin-topbar .user-menu-trigger { font-size: 0.68rem; padding: 3px 7px; }
+  .admin-topbar .user-menu-label { max-width: 130px; }
   .admin-head { gap: 12px; padding-bottom: 12px; margin-bottom: 18px; }
   .admin-head h2 { font-size: 1.1rem; letter-spacing: -0.01em; }
-  .user-menu-trigger { font-size: 0.74rem; padding: 4px 8px; }
-  .user-menu-label { max-width: 140px; }
 
   /* Modals on mobile: tighter padding + smaller display banner so a tall
      modal body fits on a small phone without horizontal cramping. */
@@ -688,9 +689,22 @@ section { scroll-margin-top: 24px; }
 /* ---------- Admin page ---------- */
 
 .admin-shell {
-  max-width: 1080px; margin: 0 auto; padding: 32px;
+  max-width: 1080px; margin: 0 auto; padding: 12px 32px 32px;
   min-height: 100vh; color: var(--fg);
 }
+/* Top-right account pill on its own row above the page heading. */
+.admin-topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 0 12px;
+}
+.admin-topbar .user-menu-trigger {
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  color: var(--fg-dim);
+}
+.admin-topbar .user-menu-label { max-width: 180px; }
+
 .admin-head {
   display: flex; justify-content: space-between; align-items: center;
   border-bottom: 1px solid var(--card-border); padding-bottom: 16px; margin-bottom: 24px;
